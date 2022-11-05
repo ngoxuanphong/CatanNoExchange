@@ -1,0 +1,10 @@
+[0:54]: Chọn điểm
+54: Roll xx
+55,56,57,58: Dùng thẻ dev
+[59:64]: Các action lấy nguyên liệu
+[64:83]: Action chọn ô để di chuyển Robber
+83: Mua đường, 84: Mua nhà, 85: Mua thành phố,
+86: Mua thẻ dev, 87: Trade bank
+88: Kết thúc lượt
+[89:94]: Chọn tài nguyên khi trade với ngân hàng, bỏ lại khi chia bài
+[94]: Chọn action lấy thẻ từ kho dự trữ phát triển
