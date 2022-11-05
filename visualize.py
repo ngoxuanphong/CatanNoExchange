@@ -44,7 +44,7 @@ if True:
 
     # 0Phong # Viết hàm này, convert env thành các giá trị thuộc tính của Board
     BOARD = convert_env_to_board(env_state)
-    BOARD = Board() # Viết hàm convert xong thì xóa hàm này đi
+    # BOARD = Board() # Viết hàm convert xong thì xóa hàm này đi
     SPRITE = Sprite(list_player_name)
 
     # print(BOARD.Tile_order)
@@ -76,9 +76,12 @@ if True:
     for p_idx in range(4):
         layer_0.add(SPRITE.Player[p_idx].Name)
         layer_0.add(SPRITE.Player[p_idx].Score)
+        layer_0.add(SPRITE.Player[p_idx].ResBank)
+        layer_0.add(SPRITE.Player[p_idx].Number_ResBank)
 
     #
     layer_0.add(SPRITE.Bank.Res_Cards)
+    layer_0.add(SPRITE.Bank.Number_ResBank)
     layer_0.add(SPRITE.Bank.Number_Res_Cards)
     for p_idx in range(4):
         layer_0.add(SPRITE.Player[p_idx].Res_Cards)
@@ -310,7 +313,7 @@ class Check:
         if BOARD.Player[p_idx].Dev_Cards[3] > 0:
             list_action.append('monopoly')
 
-        if (BOARD.Player[p_idx].BankRes > 0).any():
+        if (BOARD.Player[p_idx].ResBank > 0).any():
             list_action.append('take_res_from_storage')
 
         return list_action
@@ -938,10 +941,10 @@ def check_win():
                 hold_display(999999, False)
 
 # Đầu game
-temp = [0, 1, 2, 3, 3, 2, 1, 0]
-temp_num = [1,2,3,4,1,2,3,4]
+temp =     [0, 0, 1, 1, 2, 2, 3, 3, 0, 3, 1, 2, 2, 1, 3, 0]
+temp_num = [1, 0, 2, 0, 3, 0, 4, 0, 4, 0, 3, 0, 2, 0, 1, 0]
 
-for i in range(8):
+for i in range(16):
     p_idx = temp[i]
     BOARD.main_id = p_idx
     print(env_state[230])
@@ -958,60 +961,62 @@ for i in range(8):
     set_notification(list_player_name[p_idx]+"'s turn")
     hold_display(_(60), False)
 
-    for j in range(temp_num[i]):
-        ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-        NlChon_Numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    if temp_num[i] != 0:
 
-        NlChon = NlChon_Numba - 59
+        for j in range(temp_num[i]):
+            ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+            NlChon_Numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            
+            env.stepEnv(env_state, NlChon_Numba)
+            NlChon = NlChon_Numba - 59
 
-        BOARD.Bank.ResBank[NlChon] -= 1
-        SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
+            BOARD.Bank.ResBank[NlChon] -= 1
+            SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
 
-        tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
-        
-        des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
-        tempDy.move(des, 'center', _(60))
-        layer_3.add(tempDy)
-        hold_display(_(60), True)
-        
-        BOARD.Player[p_idx].ResBank[NlChon] += 1
-        SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
+            tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
+            
+            des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
+            tempDy.move(des, 'center', _(60))
+            layer_3.add(tempDy)
+            hold_display(_(60), True)
+            
+            BOARD.Player[p_idx].ResBank[NlChon] += 1
+            SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
 
-        layer_3.empty()
+            layer_3.empty()
+    else:
+        set_notification(list_player_name[p_idx]+"is placing settlement")
 
+        list_diemCoTheDat = CHECK.listDiemCoTheDatDauGame()
 
-    set_notification(list_player_name[p_idx]+"is placing settlement")
+        diemDatNha = datNha(p_idx, list_diemCoTheDat)
 
-    list_diemCoTheDat = CHECK.listDiemCoTheDatDauGame()
+        if BOARD.Player[p_idx].Score == 2:
+            list_tile_nearest = [
+                tile_idx for tile_idx in CONST.POINT_TILE[diemDatNha] if BOARD.Tile_order[tile_idx] != 5]
+            list_TnNhan = numpy.full(19, 0)
+            list_TnNhan[list_tile_nearest] = 1
+            list_res_reci, list_res_str = ANIMATION.nhanTaiNguyenTuMap(
+                list_TnNhan, p_idx)
+            for res_idx in range(5):
+                if list_res_reci[res_idx] > 0:
+                    BOARD.Bank.Res_Cards[res_idx] -= list_res_reci[res_idx]
+                    BOARD.Player[p_idx].Res_Cards[res_idx] += list_res_reci[res_idx]
+                    SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
+                        BOARD.Bank.Res_Cards[res_idx])
+                    SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
+                        BOARD.Player[p_idx].Res_Cards[res_idx])
 
-    diemDatNha = datNha(p_idx, list_diemCoTheDat)
+            set_notification(
+                list_player_name[p_idx] + ' got: ' + str(list_res_str))
+            hold_display(_(60), False)
 
-    if BOARD.Player[p_idx].Score == 2:
-        list_tile_nearest = [
-            tile_idx for tile_idx in CONST.POINT_TILE[diemDatNha] if BOARD.Tile_order[tile_idx] != 5]
-        list_TnNhan = numpy.full(19, 0)
-        list_TnNhan[list_tile_nearest] = 1
-        list_res_reci, list_res_str = ANIMATION.nhanTaiNguyenTuMap(
-            list_TnNhan, p_idx)
-        for res_idx in range(5):
-            if list_res_reci[res_idx] > 0:
-                BOARD.Bank.Res_Cards[res_idx] -= list_res_reci[res_idx]
-                BOARD.Player[p_idx].Res_Cards[res_idx] += list_res_reci[res_idx]
-                SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
-                    BOARD.Bank.Res_Cards[res_idx])
-                SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
-                    BOARD.Player[p_idx].Res_Cards[res_idx])
+        set_notification(list_player_name[p_idx]+"is placing road")
 
-        set_notification(
-            list_player_name[p_idx] + ' got: ' + str(list_res_str))
-        hold_display(_(60), False)
+        # Nhận điểm đặt đường
+        list_DuongCoTheDat = CONST.POINT_ROAD[diemDatNha]
 
-    set_notification(list_player_name[p_idx]+"is placing road")
-
-    # Nhận điểm đặt đường
-    list_DuongCoTheDat = CONST.POINT_ROAD[diemDatNha]
-
-    datDuong(p_idx, list_DuongCoTheDat)
+        datDuong(p_idx, list_DuongCoTheDat)
  
 
 # Mỗi turn

@@ -620,7 +620,7 @@ def compare_numba_graphic(board: Board, env):
     
     if board.Robber_location != env[19]:
         print(env)
-        print('sai vị trí của robber(giá trị range(0,19))')
+        print('sai vị trí của robber(giá trị range(0,19))', board.Robber_location, env[19])
         check = True
     
     if check:
