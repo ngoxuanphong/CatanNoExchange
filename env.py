@@ -868,7 +868,7 @@ def stepEnv(env: np.ndarray, action: int):
 
 
         else:  # Các turn giữa game
-            if env[223] != 1:  # Không dùng thẻ roadbuilding, về pha 6
+            if env[233] != 1:  # Không dùng thẻ roadbuilding, về pha 6
                 env[229] = 6
 
                 return

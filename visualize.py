@@ -9,102 +9,94 @@ def random_player(p_state, temp_file, per_file):
     arr_action = env.getValidActions(p_state)
     arr_action = np.where(arr_action == 1)[0]
     action = np.random.choice(arr_action)
-    print('Arr', arr_action, 'action', action, p_state[186])
+    print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
     return action, temp_file, per_file
 
 from env import ROAD_PRICE, CITY_PRICE, SETTLEMENT_PRICE, DEV_PRICE as DEV_CARD_PRICE
 
+# Import
+list_player_name = ['Mysticblue', 'Gold', 'Silver', 'Bronze']
+list_player_type = ['B', 'B', 'B', 'B']
+list_player_color = ['mysticblue', 'gold', 'silver', 'bronze']
+list_player = [random_player, random_player, random_player, random_player]
 
-if True:
-    # Import
-    list_player_name = ['Mysticblue', 'Gold', 'Silver', 'Bronze']
-    list_player_type = ['B', 'B', 'B', 'B']
-    list_player_color = ['mysticblue', 'gold', 'silver', 'bronze']
-    list_player = [random_player, random_player, random_player, random_player]
+SPEED = 15000
 
+# Đừng chỉnh gì ở dưới đây
+
+SPEED_1 = 1.0
+if SPEED > 5:
+    SPEED_1 = SPEED/5
     SPEED = 5
 
-    # Đừng chỉnh gì ở dưới đây
+temp = [0, 1, 2, 3]
+random.shuffle(temp)
+list_player_name = [list_player_name[i] for i in temp]
+list_player_type = [list_player_type[i] for i in temp]
+list_player_color = [list_player_color[i] for i in temp]
+list_player = [list_player[i] for i in temp]
 
-    SPEED_1 = 1.0
-    if SPEED > 5:
-        SPEED_1 = SPEED/5
-        SPEED = 5
+Image.set_color(list_player_color)
 
-    temp = [0, 1, 2, 3]
-    random.shuffle(temp)
-    list_player_name = [list_player_name[i] for i in temp]
-    list_player_type = [list_player_type[i] for i in temp]
-    list_player_color = [list_player_color[i] for i in temp]
-    list_player = [list_player[i] for i in temp]
+env_state = env.initEnv()
 
-    Image.set_color(list_player_color)
+BOARD = convert_env_to_board(env_state)
+SPRITE = Sprite(list_player_name)
 
-    env_state = env.initEnv()
+# Tạo màn hình
+pygame.init()
+screen = pygame.display.set_mode((1600, 900))
+clock = pygame.time.Clock()
 
-    # 0Phong # Viết hàm này, convert env thành các giá trị thuộc tính của Board
-    BOARD = convert_env_to_board(env_state)
-    # BOARD = Board() # Viết hàm convert xong thì xóa hàm này đi
-    SPRITE = Sprite(list_player_name)
+layer_0 = pygame.sprite.Group()  # Lớp dưới cùng
+layer_1 = pygame.sprite.Group()  # Lớp dưới cùng
+layer_2 = pygame.sprite.Group()  # Settlement and Citites
+layer_3 = pygame.sprite.Group()  # Lớp cho những thứ chuyển động
+layer_4 = pygame.sprite.Group()  # Lớp trên cùng (pause game)
 
-    # print(BOARD.Tile_order)
-    # print(BOARD.Robber_location)
-    # print(BOARD.Prob_order)
-    # print(BOARD.Port_order)
+background = BOARD.draw_map(screen)
 
-    # Tạo màn hình
-    pygame.init()
-    screen = pygame.display.set_mode((1600, 900))
-    clock = pygame.time.Clock()
+# Đặt Robber
+layer_0.add(SPRITE.Robber)
+SPRITE.Robber.set_pos(CONST.TILE_CENTER_POS[BOARD.Robber_location])
 
-    layer_0 = pygame.sprite.Group()  # Lớp dưới cùng
-    layer_1 = pygame.sprite.Group()  # Lớp dưới cùng
-    layer_2 = pygame.sprite.Group()  # Settlement and Citites
-    layer_3 = pygame.sprite.Group()  # Lớp cho những thứ chuyển động
-    layer_4 = pygame.sprite.Group()  # Lớp trên cùng (pause game)
+# Thông báo
+layer_0.add(SPRITE.Notification)
 
-    background = BOARD.draw_map(screen)
+#
+for p_idx in range(4):
+    layer_0.add(SPRITE.Player[p_idx].Name)
+    layer_0.add(SPRITE.Player[p_idx].Score)
+    layer_0.add(SPRITE.Player[p_idx].ResBank)
+    layer_0.add(SPRITE.Player[p_idx].Number_ResBank)
 
-    # Đặt Robber
-    layer_0.add(SPRITE.Robber)
-    SPRITE.Robber.set_pos(CONST.TILE_CENTER_POS[BOARD.Robber_location])
 
-    # Thông báo
-    layer_0.add(SPRITE.Notification)
+#
+layer_0.add(SPRITE.Bank.Res_Cards)
+layer_0.add(SPRITE.Bank.Number_ResBank)
+layer_0.add(SPRITE.Bank.Number_Res_Cards)
 
-    #
-    for p_idx in range(4):
-        layer_0.add(SPRITE.Player[p_idx].Name)
-        layer_0.add(SPRITE.Player[p_idx].Score)
-        layer_0.add(SPRITE.Player[p_idx].ResBank)
-        layer_0.add(SPRITE.Player[p_idx].Number_ResBank)
+for p_idx in range(4):
+    layer_0.add(SPRITE.Player[p_idx].Res_Cards)
+    layer_0.add(SPRITE.Player[p_idx].Number_Res_Cards)
+    layer_0.add(SPRITE.Player[p_idx].Dev_Cards)
+    layer_0.add(SPRITE.Player[p_idx].Number_Dev_Cards)
 
-    #
-    layer_0.add(SPRITE.Bank.Res_Cards)
-    layer_0.add(SPRITE.Bank.Number_ResBank)
-    layer_0.add(SPRITE.Bank.Number_Res_Cards)
-    for p_idx in range(4):
-        layer_0.add(SPRITE.Player[p_idx].Res_Cards)
-        layer_0.add(SPRITE.Player[p_idx].Number_Res_Cards)
-        layer_0.add(SPRITE.Player[p_idx].Dev_Cards)
-        layer_0.add(SPRITE.Player[p_idx].Number_Dev_Cards)
+layer_0.add(SPRITE.Bank.Dev_Cards)
+layer_0.add(SPRITE.Bank.Number_Dev_Cards)
 
-    layer_0.add(SPRITE.Bank.Dev_Cards)
-    layer_0.add(SPRITE.Bank.Number_Dev_Cards)
+#
+for p_idx in range(4):
+    layer_0.add(SPRITE.Player[p_idx].Icon_largest_army)
+    layer_0.add(SPRITE.Player[p_idx].Icon_longest_road)
+    layer_0.add(SPRITE.Player[p_idx].Amount_used_knight)
+    layer_0.add(SPRITE.Player[p_idx].Current_longest_road_length)
 
-    #
-    for p_idx in range(4):
-        layer_0.add(SPRITE.Player[p_idx].Icon_largest_army)
-        layer_0.add(SPRITE.Player[p_idx].Icon_longest_road)
-        layer_0.add(SPRITE.Player[p_idx].Amount_used_knight)
-        layer_0.add(SPRITE.Player[p_idx].Current_longest_road_length)
 
 ###########################################################################
 
-
 def _(k):
     return round(k/SPEED_1)
-
 
 def update_display(move):
     screen.blit(background, (0, 0))
@@ -124,7 +116,6 @@ def update_display(move):
     else:
         clock.tick(60)
 
-
 def pause_game():
     temp = Dynamic_Sprite(multiline_surface(
         'GAME PAUSED', font_size=72, rect_size=(800, 450)), (800, 450), 'center')
@@ -142,7 +133,6 @@ def pause_game():
 
     layer_4.empty()
 
-
 def check_event(event):
     if event.type == pygame.QUIT:
         pygame.quit()
@@ -153,7 +143,6 @@ def check_event(event):
 
     return False
 
-
 def hold_display(times, move):
     k = 0
     while k < times:
@@ -163,91 +152,299 @@ def hold_display(times, move):
 
         update_display(move=move)
         k += 1
+    
+###########################################################################
+def change_player_name_color(p_idx, color):
+    SPRITE.Player[p_idx].Name.change_color(color)
+    SPRITE.Player[p_idx].Score.change_color(color)
+
+def set_notification(text):
+    SPRITE.Notification.set_image(multiline_surface(text))
+
+def datNha(p_idx, list_diemCoTheDat):
+    list_diemCoTheDat = list(np.where(env.getValidActions(env.getAgentState(env_state))==1)[0])
+    for diem in list_diemCoTheDat:
+        layer_3.add(SPRITE.Point_highlight_circle[diem])
+    
+    hold_display(_(60), False)
+
+    
+    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+
+    env.stepEnv(env_state, diemDatNha)
+
+    layer_3.empty()
+
+    BOARD.Settlements_and_Cities_state[diemDatNha] = p_idx+1
+    BOARD.Player[p_idx].Remaining_Settlements -= 1
+    ANIMATION.datNha(diemDatNha, p_idx, 0)
+    BOARD.Player[p_idx].Score += 1
+    SPRITE.Player[p_idx].Score.set_value(
+        f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
+    for port_idx in range(9):
+        if diemDatNha in CONST.PORT_POINT[port_idx]:
+            if BOARD.Port_order[port_idx] == 5:
+                BOARD.Player[p_idx].Card_exchange_rate = numpy.minimum(
+                    BOARD.Player[p_idx].Card_exchange_rate, numpy.full(5, 3))
+            else:
+                BOARD.Player[p_idx].Card_exchange_rate[BOARD.Port_order[port_idx]] = 2
+
+            break
+    
+    return diemDatNha
+
+def datDuong(p_idx, list_DuongCoTheDat):
+    for diem in list_DuongCoTheDat:
+        layer_3.add(SPRITE.Road_highlight_circle[diem])
+    
+    hold_display(_(60), False)
+
+    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+    
+    duongDuocChon = 9999999
+    diem_t1 = int(env_state[231])
+    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    layer_3.empty()
+
+    env.stepEnv(env_state, diem_t2)
+    for road_idx in range(72):
+        if diem_t1 in CONST.ROAD_POINT[road_idx] and diem_t2 in CONST.ROAD_POINT[road_idx]:
+            duongDuocChon = road_idx
+            break
+    
+    if duongDuocChon == 999999:
+        print(diem_t1, diem_t2)
+        input('HGDYSG')
+    
+
+    BOARD.Roads_state[duongDuocChon] = p_idx + 1
+    BOARD.Player[p_idx].Remaining_Roads -= 1
+    ANIMATION.datDuong(duongDuocChon, p_idx)
+
+    longest_road_player = CHECK.conDuongDaiNhat_1(p_idx)
+    BOARD.Player[p_idx].Current_Longest_Road_Length = longest_road_player
+    SPRITE.Player[p_idx].Current_longest_road_length.set_value(
+        longest_road_player)
+
+def datDuongGiuaGame(p_idx, list_DuongCoTheDat):
+    for diem in list_DuongCoTheDat:
+        layer_3.add(SPRITE.Road_highlight_circle[diem])
+    
+    hold_display(_(60), False)
+    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+    diem_t1, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    env.stepEnv(env_state, diem_t1)
+    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    env.stepEnv(env_state, diem_t2)
+    layer_3.empty()
+
+    print(diem_t1, diem_t2)
+
+    for road_idx in range(72):
+        if diem_t1 in CONST.ROAD_POINT[road_idx] and diem_t2 in CONST.ROAD_POINT[road_idx]:
+            duongDuocChon = road_idx
+            break
+    
+    BOARD.Roads_state[duongDuocChon] = p_idx + 1
+    BOARD.Player[p_idx].Remaining_Roads -= 1
+    ANIMATION.datDuong(duongDuocChon, p_idx)
+
+    longest_road_player = CHECK.conDuongDaiNhat_1(p_idx)
+    BOARD.Player[p_idx].Current_Longest_Road_Length = longest_road_player
+    SPRITE.Player[p_idx].Current_longest_road_length.set_value(
+        longest_road_player)
+
+def datThanhPho(p_idx, list_diemCoTheDat):
+
+    for diem in list_diemCoTheDat:
+        layer_3.add(SPRITE.Point_highlight_circle[diem])
+
+    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+
+    env.stepEnv(env_state, diemDatNha)
+
+    # print('Điểm đặt nhà:', diemDatNha)
+    BOARD.Settlements_and_Cities_state[diemDatNha] = -p_idx-1
+    BOARD.Player[p_idx].Remaining_Cities -= 1
+    BOARD.Player[p_idx].Remaining_Settlements += 1
+    ANIMATION.datNha(diemDatNha, p_idx, 1)
+    BOARD.Player[p_idx].Score += 1
+    SPRITE.Player[p_idx].Score.set_value(
+        f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
+
+    return diemDatNha
+
+def diChuyenRobber(p_idx):
+    list_DiemCoTheDat = list(np.where(env.getValidActions(env.getAgentState(env_state))==1)[0])
+
+    for diem in list_DiemCoTheDat:
+        layer_3.add(SPRITE.Tile_highlight_circle[diem-64])
+
+    hold_display(_(60), False)
+
+    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+    new_Robber_pos_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    new_Robber_pos = new_Robber_pos_numba - 64 # Dịch sang [0:18]
+
+    layer_3.empty()
+
+    env.stepEnv(env_state, new_Robber_pos_numba)
+    ANIMATION.Robber_move(new_Robber_pos)
+    BOARD.Robber_location = new_Robber_pos
+    if BOARD.Tile_order[new_Robber_pos] != 5:
+        list_tile_nearest = [new_Robber_pos]
+    else:
+        list_tile_nearest = []
+    list_TnNhan = numpy.full(19, 0)
+    list_TnNhan[list_tile_nearest] = 1
+    list_res_reci, list_res_str = ANIMATION.nhanTaiNguyenTuMap(
+        list_TnNhan, p_idx)
+    for res_idx in range(5):
+        if list_res_reci[res_idx] > 0:
+            BOARD.Bank.Res_Cards[res_idx] -= list_res_reci[res_idx]
+            BOARD.Player[p_idx].Res_Cards[res_idx] += list_res_reci[res_idx]
+            SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
+                BOARD.Bank.Res_Cards[res_idx])
+            SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
+                BOARD.Player[p_idx].Res_Cards[res_idx])
+
+    set_notification(
+        list_player_name[p_idx] + ' got: ' + str(list_res_str))
+    hold_display(_(60), False)
+
+def traNhieuTN(p_idx, list_res_idx):
+    for res_idx in list_res_idx:
+        BOARD.Player[p_idx].Res_Cards[res_idx] -= 1
+        SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
+            BOARD.Player[p_idx].Res_Cards[res_idx])
+        ANIMATION.traTaiNguyenBank(p_idx, res_idx)
+        BOARD.Bank.Res_Cards[res_idx] += 1
+        SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
+            BOARD.Bank.Res_Cards[res_idx])
+
+def check_win():
+    list_score = []
+    for p_idx in range(4):
+        list_score.append(
+            BOARD.Player[p_idx].Score + BOARD.Player[p_idx].Dev_Cards[4])
+
+    max_score = max(list_score)
+    if max_score >= 10:
+        for i in range(3, -1, -1):
+            if list_score[i] == max_score:
+                set_notification(
+                    'Congratulation! ' + list_player_name[i] + ' win this freeking Game!')
+                hold_display(999999, False)
+
+def check_longest_Road():
+    list_p_longest_Road = []
+    for p_idx in range(4):
+        l_ = CHECK.conDuongDaiNhat_1(p_idx)
+        list_p_longest_Road.append(l_)
+        BOARD.Player[p_idx].Current_Longest_Road_Length = l_
+        SPRITE.Player[p_idx].Current_longest_road_length.set_value(
+            BOARD.Player[p_idx].Current_Longest_Road_Length)
+
+    longgest_length = max(list_p_longest_Road)
+    if longgest_length < 5:
+        if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ông nào có danh hiệu
+            pass
+        else:  # Có ông có danh hiệu nhưng vừa bị cướp con đường dài nhất
+            old_p_idx = BOARD.Current_Longest_Road_idx
+            BOARD.Current_Longest_Road_idx = 9999
+            BOARD.Current_Longest_Road = longgest_length
+            BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
+            SPRITE.Player[old_p_idx].Score.set_value(
+                f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
+            SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
+                Image.Longest_road)
+    else:
+        list_p_longest = []
+        for i in range(4):
+            if list_p_longest_Road[i] == longgest_length:
+                list_p_longest.append(i)
+
+        if len(list_p_longest) == 1:  # Có đúng 1 ông dài nhất
+            if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ai có longest road, ghi nhận danh hiệu cho ông này
+                # Bàn chơi ghi nhận
+                BOARD.Current_Longest_Road_idx = list_p_longest[0]
+                BOARD.Current_Longest_Road = longgest_length  # Bàn chơi ghi nhận
+                BOARD.Player[list_p_longest[0]].Score += 2  # Cộng điểm
+                SPRITE.Player[list_p_longest[0]].Score.set_value(
+                    f'{BOARD.Player[list_p_longest[0]].Score} ({BOARD.Player[list_p_longest[0]].Dev_Cards[4]})')  # Cập nhật lên màn hình
+                SPRITE.Player[list_p_longest[0]].Icon_longest_road.set_image(
+                    Image.Longest_road_highlight)  # Cập nhật highlight
+            else:  # Đã có longest_road
+                # Cùng người, không thay đổi gì
+                if BOARD.Current_Longest_Road_idx == list_p_longest[0]:
+                    BOARD.Current_Longest_Road = longgest_length
+                else:  # Khác người, đổi danh hiệu cho ông mới, trừ điểm ông cũ
+                    old_p_idx = BOARD.Current_Longest_Road_idx
+                    # Bàn chơi ghi nhận
+                    BOARD.Current_Longest_Road_idx = list_p_longest[0]
+                    BOARD.Current_Longest_Road = longgest_length  # Bàn chơi ghi nhận
+                    # Cộng điểm thằng mới
+                    BOARD.Player[list_p_longest[0]].Score += 2
+                    SPRITE.Player[list_p_longest[0]].Score.set_value(
+                        f'{BOARD.Player[list_p_longest[0]].Score} ({BOARD.Player[list_p_longest[0]].Dev_Cards[4]})')
+                    BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
+                    SPRITE.Player[old_p_idx].Score.set_value(
+                        f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
+                    SPRITE.Player[list_p_longest[0]].Icon_longest_road.set_image(
+                        Image.Longest_road_highlight)  # Highlight
+                    SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
+                        Image.Longest_road)
+        else:  # Có 2 trở lên người cùng có con đường dài nhất
+            if BOARD.Current_Longest_Road_idx in list_p_longest:  # Một trong số 2 người này đang sở hữu danh hiệu
+                BOARD.Current_Longest_Road = longgest_length
+            else:  # tất cả người có con đường dài nhất đều không nắm giữ danh hiệu
+                if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ai có danh hiệu
+                    pass
+                else:  # Đang có, tức là ông đang nắm giữu bị cướp con đường dài nhất, cần thu hồi lại
+                    old_p_idx = BOARD.Current_Longest_Road_idx
+                    BOARD.Current_Longest_Road_idx = 9999
+                    BOARD.Current_Longest_Road = longgest_length
+                    BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
+                    SPRITE.Player[old_p_idx].Score.set_value(
+                        f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
+                    SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
+                        Image.Longest_road)
+
+def check_largest_Army(p_idx):
+    if BOARD.Current_Largest_Army_idx == p_idx:
+        BOARD.Current_Largest_Army = BOARD.Player[p_idx].Used_Knight_Cards
+    else:
+        if BOARD.Player[p_idx].Used_Knight_Cards > BOARD.Current_Largest_Army:  # Lớn hơn
+            print(BOARD.Player[p_idx].Used_Knight_Cards,
+                  BOARD.Current_Largest_Army, 'muahahahahahahahahaha')
+
+            old_p_idx = BOARD.Current_Largest_Army_idx
+            if old_p_idx != 9999:
+                BOARD.Player[old_p_idx].Score -= 2
+
+            BOARD.Player[p_idx].Score += 2
+            if old_p_idx != 9999:
+                SPRITE.Player[old_p_idx].Score.set_value(
+                    f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
+
+            SPRITE.Player[p_idx].Score.set_value(
+                f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
+
+            BOARD.Current_Largest_Army_idx = p_idx
+            BOARD.Current_Largest_Army = BOARD.Player[p_idx].Used_Knight_Cards
+            SPRITE.Player[p_idx].Icon_largest_army.set_image(
+                Image.Largest_army_highlight)
+            if old_p_idx != 9999:
+                SPRITE.Player[old_p_idx].Icon_largest_army.set_image(
+                    Image.Largest_army)
+
 
 ###########################################################################
 class Check:
     def __init__(self) -> None:
         pass
-
-    def actionCoTheLam(self, p_idx, list_action: list, trade_remain):
-        # Xây đường
-        if self.khaNangXayDuong(p_idx)[0]:
-            if 'build_road' not in list_action:
-                list_action.append('build_road')
-        else:
-            if 'build_road' in list_action:
-                list_action.remove('build_road')
-
-        # Xây nhà
-        if self.khaNangXayNha(p_idx)[0]:
-            if 'build_settlement' not in list_action:
-                list_action.append('build_settlement')
-        else:
-            if 'build_settlement' in list_action:
-                list_action.remove('build_settlement')
-
-        # Xây thành phố
-        if self.khaNangXayThanhPho(p_idx)[0]:
-            if 'build_city' not in list_action:
-                list_action.append('build_city')
-        else:
-            if 'build_city' in list_action:
-                list_action.remove('build_city')
-
-        # Mua thẻ dev
-        if self.khaNangMuaDev(p_idx):
-            if 'buy_dev' not in list_action:
-                list_action.append('buy_dev')
-        else:
-            if 'buy_dev' in list_action:
-                list_action.remove('buy_dev')
-
-        # # Trade
-        # '''Check tài nguyên của người chơi'''
-        # max_p_res = 0
-        # for j in range(1, 4):
-        #     sub_p_idx = (p_idx + j) % 4
-        #     if sum(BOARD.Player[sub_p_idx].Res_Cards) > max_p_res:
-        #         max_p_res = sum(BOARD.Player[sub_p_idx].Res_Cards)
-
-        # if trade_remain > 0 and max_p_res > 0 and sum(BOARD.Player[p_idx].Res_Cards) > 0:
-        #     if 'trade' not in list_action:
-        #         list_action.append('trade')
-        # else:
-        #     if 'trade' in list_action:
-        #         list_action.remove('trade')
-
-        # Trade bank
-        check_trade_bank = False
-        for res_idx in range(5):
-            if BOARD.Player[p_idx].Res_Cards[res_idx] >= BOARD.Player[p_idx].Card_exchange_rate[res_idx]:
-                for res_idx_1 in range(5):
-                    if res_idx_1 != res_idx and BOARD.Bank.Res_Cards[res_idx_1] > 0:
-                        check_trade_bank = True
-                        break
-
-                if check_trade_bank:
-                    break
-
-        if check_trade_bank:
-            if 'trade_bank' not in list_action:
-                list_action.append('trade_bank')
-        else:
-            if 'trade_bank' in list_action:
-                list_action.remove('trade_bank')
-
-        return list_action
-
-    def listDiemCoTheDatDauGame(self):
-        temp = [i for i in range(54)]
-        for i in range(54):
-            if BOARD.Settlements_and_Cities_state[i] != 0:
-                temp.remove(i)
-                for j in CONST.POINT_POINT[i]:
-                    if j in temp:
-                        temp.remove(j)
-
-        return temp
 
     def conDuongDaiNhat_1(self, p_idx):
         def find_max(length, diem_Xp, list_duongDaDi, p_roads, p_points) -> int:
@@ -312,12 +509,22 @@ class Check:
 
         if BOARD.Player[p_idx].Dev_Cards[3] > 0:
             list_action.append('monopoly')
-
-        if (BOARD.Player[p_idx].ResBank > 0).any():
-            list_action.append('take_res_from_storage')
-
+        
         return list_action
+    
 
+    def soLuongTaiNguyenTraDo7(self, main_p_idx):
+        list_num_return = []
+        for i in range(4):
+            p_idx = (main_p_idx + i) % 4
+            if sum(BOARD.Player[p_idx].Res_Cards) > 7:
+                list_num_return.append(
+                    int(sum(BOARD.Player[p_idx].Res_Cards)/2.0))
+            else:
+                list_num_return.append(0)
+
+        return list_num_return
+    
     def viTriXayDuong(self, p_idx):
         if BOARD.Player[p_idx].Remaining_Roads == 0:
             return False, []
@@ -401,19 +608,71 @@ class Check:
 
         return True
 
-    def soLuongTaiNguyenTraDo7(self, main_p_idx):
-        list_num_return = []
-        for i in range(4):
-            p_idx = (main_p_idx + i) % 4
-            if sum(BOARD.Player[p_idx].Res_Cards) > 7:
-                list_num_return.append(
-                    int(sum(BOARD.Player[p_idx].Res_Cards)/2.0))
-            else:
-                list_num_return.append(0)
 
-        return list_num_return
+    def actionCoTheLam(self, p_idx, list_action: list, layTNtuKho):
+        # Xây đường
+        if self.khaNangXayDuong(p_idx)[0]:
+            if 'build_road' not in list_action:
+                list_action.append('build_road')
+        else:
+            if 'build_road' in list_action:
+                list_action.remove('build_road')
+
+        # Xây nhà
+        if self.khaNangXayNha(p_idx)[0]:
+            if 'build_settlement' not in list_action:
+                list_action.append('build_settlement')
+        else:
+            if 'build_settlement' in list_action:
+                list_action.remove('build_settlement')
+
+        # Xây thành phố
+        if self.khaNangXayThanhPho(p_idx)[0]:
+            if 'build_city' not in list_action:
+                list_action.append('build_city')
+        else:
+            if 'build_city' in list_action:
+                list_action.remove('build_city')
+
+        # Mua thẻ dev
+        if self.khaNangMuaDev(p_idx):
+            if 'buy_dev' not in list_action:
+                list_action.append('buy_dev')
+        else:
+            if 'buy_dev' in list_action:
+                list_action.remove('buy_dev')
+        
+        # Trade bank
+        check_trade_bank = False
+        for res_idx in range(5):
+            if BOARD.Player[p_idx].Res_Cards[res_idx] >= BOARD.Player[p_idx].Card_exchange_rate[res_idx]:
+                for res_idx_1 in range(5):
+                    if res_idx_1 != res_idx and BOARD.Bank.Res_Cards[res_idx_1] > 0:
+                        check_trade_bank = True
+                        break
+
+                if check_trade_bank:
+                    break
+
+        if check_trade_bank:
+            if 'trade_bank' not in list_action:
+                list_action.append('trade_bank')
+        else:
+            if 'trade_bank' in list_action:
+                list_action.remove('trade_bank')
+        
+        if layTaiNguyenTuKho:
+            if 'take_res_from_storage' not in list_action:
+                list_action.append('take_res_from_storage')
+        else:
+            if 'take_res_from_storage' in list_action:
+                list_action.remove('take_res_from_storage')
+        
+        return list_action
+
 
 CHECK = Check()
+
 
 class Animation:
     def __init__(self) -> None:
@@ -437,37 +696,7 @@ class Animation:
         layer_3.empty()
         SPRITE.Settlements_and_Cities[diemDat].set_image(temp.image)
         layer_2.add(SPRITE.Settlements_and_Cities[diemDat])
-
-    def nhanTaiNguyenTuMap(self, list_TnNhan: numpy.ndarray, p_idx):
-        '''
-        list_TnNhan: 19 phần tử, mỗi phần tử là một ô theo idx, giá trị là số Tn nhận được từ ô đó
-        '''
-        for tile_idx in range(19):
-            if list_TnNhan[tile_idx] != 0:
-                num_rei = list_TnNhan[tile_idx]
-                res_idx = BOARD.Tile_order[tile_idx]
-                for i in range(num_rei):
-                    pos = CONST.TILE_CENTER_POS[tile_idx]
-                    temp = Dynamic_Sprite(Image.Res_card[res_idx], (pos[0]+32*(
-                        i-(num_rei-1)/2.0), pos[1]+18*(i-(num_rei-1)/2.0)), 'center')
-                    layer_3.add(temp)
-                    des = SPRITE.Player[p_idx].Res_Cards[res_idx].rect.center
-                    temp.move(des, 'center', _(120))
-
-        hold_display(_(120), True)
-        layer_3.empty()
-        list_res_reci = [0 for i in range(5)]
-        for i in range(19):
-            if list_TnNhan[i] > 0:
-                list_res_reci[BOARD.Tile_order[i]] += list_TnNhan[i]
-
-        list_res_str = []
-        for i in range(5):
-            if list_res_reci[i] > 0:
-                list_res_str.append(f'{RES_NAME[i]}*{list_res_reci[i]}')
-
-        return list_res_reci, list_res_str
-
+    
     def datDuong(self, duongDuocChon, p_idx):
         pos_1 = CONST.POINT_COORDINATE[CONST.ROAD_POINT[duongDuocChon][0]]
         pos_2 = CONST.POINT_COORDINATE[CONST.ROAD_POINT[duongDuocChon][1]]
@@ -533,8 +762,39 @@ class Animation:
         layer_3.empty()
         background.blit(temp.image, temp.rect.topleft)
 
+    def nhanTaiNguyenTuMap(self, list_TnNhan: numpy.ndarray, p_idx):
+        '''
+        list_TnNhan: 19 phần tử, mỗi phần tử là một ô theo idx, giá trị là số Tn nhận được từ ô đó
+        '''
+        for tile_idx in range(19):
+            if list_TnNhan[tile_idx] != 0:
+                num_rei = list_TnNhan[tile_idx]
+                res_idx = BOARD.Tile_order[tile_idx]
+                for i in range(num_rei):
+                    pos = CONST.TILE_CENTER_POS[tile_idx]
+                    temp = Dynamic_Sprite(Image.Res_card[res_idx], (pos[0]+32*(
+                        i-(num_rei-1)/2.0), pos[1]+18*(i-(num_rei-1)/2.0)), 'center')
+                    layer_3.add(temp)
+                    print(p_idx, res_idx)
+                    des = SPRITE.Player[p_idx].Res_Cards[res_idx].rect.center
+                    temp.move(des, 'center', _(120))
+
+        hold_display(_(120), True)
+        layer_3.empty()
+        list_res_reci = [0 for i in range(5)]
+        for i in range(19):
+            if list_TnNhan[i] > 0:
+                list_res_reci[BOARD.Tile_order[i]] += list_TnNhan[i]
+
+        list_res_str = []
+        for i in range(5):
+            if list_res_reci[i] > 0:
+                list_res_str.append(f'{RES_NAME[i]}*{list_res_reci[i]}')
+
+        return list_res_reci, list_res_str
+
     def rollDice(self, dice_1, dice_2):
-        layer_1.remove(SPRITE.Button_roll_dice)
+        # layer_1.remove(SPRITE.Button_roll_dice)
         # dice_1 = random.randrange(1,7)
         # dice_2 = random.randrange(1,7)
         SPRITE.Dices[0].set_image(Image.Dice[dice_1])
@@ -542,7 +802,7 @@ class Animation:
         layer_0.add(SPRITE.Dices)
         # total_dice = dice_1 + dice_2
         # return total_dice
-
+    
     def traTaiNguyenBank(self, p_idx, res_idx):
         temp = SPRITE.Player[p_idx].Res_Cards[res_idx].copy()
         des = SPRITE.Bank.Res_Cards[res_idx].rect.center
@@ -550,15 +810,7 @@ class Animation:
         layer_3.add(temp)
         hold_display(_(60), move=True)
         layer_3.empty()
-
-    def bankTraTaiNguyen(self, p_idx, res_pick_idx):
-        temp = SPRITE.Bank.Res_Cards[res_pick_idx].copy()
-        des = SPRITE.Player[p_idx].Res_Cards[res_pick_idx].rect.center
-        temp.move(des, 'center', _(60))
-        layer_3.add(temp)
-        hold_display(_(60), move=True)
-        layer_3.empty()
-
+    
     def Robber_move(self, new_Robber_pos):
         layer_0.remove(SPRITE.Robber)
         des = CONST.TILE_CENTER_POS[new_Robber_pos]
@@ -569,6 +821,15 @@ class Animation:
         layer_3.remove(temp)
         SPRITE.Robber.set_pos(des)
         layer_0.add(SPRITE.Robber)
+    
+    def bankTraTaiNguyen(self, p_idx, res_pick_idx):
+        temp = SPRITE.Bank.Res_Cards[res_pick_idx].copy()
+        des = SPRITE.Player[p_idx].Res_Cards[res_pick_idx].rect.center
+        temp.move(des, 'center', _(60))
+        layer_3.add(temp)
+        hold_display(_(60), move=True)
+        layer_3.empty()
+    
     def TnTuNguoiChoiNaySangNguoiNguoiKhac(self, p_reci, p_give, res_idx):
         temp = SPRITE.Player[p_give].Res_Cards[res_idx].copy()
         des = SPRITE.Player[p_reci].Res_Cards[res_idx].rect.center
@@ -579,366 +840,7 @@ class Animation:
 
 ANIMATION = Animation()
 
-
 ###########################################################################
-
-def change_player_name_color(p_idx, color):
-    SPRITE.Player[p_idx].Name.change_color(color)
-    SPRITE.Player[p_idx].Score.change_color(color)
-
-
-def set_notification(text):
-    SPRITE.Notification.set_image(multiline_surface(text))
-
-def diChuyenRobber(p_idx):
-    list_DiemCoTheDat = [i for i in range(19) if i != BOARD.Robber_location]
-
-    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    print(11111)
-    # if list_player_type[p_idx] == 'H':
-    #     new_Robber_pos = ACTION_INTERFACE.chonDiem(
-    #         list_DiemCoTheDat, SPRITE.Tile_highlight_circle, Image.Big_highlight_circle, Image.Big_highlight_circle_white)
-    #     new_Robber_pos_numba = new_Robber_pos + 64
-    # else:
-    #     new_Robber_pos_numba, tf, pf = list_player[p_idx](
-    #         env.getAgentState(env_state), [0], [0])
-    #     new_Robber_pos = new_Robber_pos_numba - 64
-
-    new_Robber_pos_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-    new_Robber_pos = new_Robber_pos_numba - 64 # Dịch sang [0:18]
-
-    env.stepEnv(env_state, new_Robber_pos_numba)
-
-    if new_Robber_pos not in list_DiemCoTheDat:
-        print('Chỗ này sai 1111')
-        input()
-
-    # print('Vị trí Robber mới:', new_Robber_pos)
-    ANIMATION.Robber_move(new_Robber_pos)
-    BOARD.Robber_location = new_Robber_pos
-
-    list_tile_nearest = [new_Robber_pos]
-    list_TnNhan = numpy.full(19, 0)
-    list_TnNhan[list_tile_nearest] = 1
-    list_res_reci, list_res_str = ANIMATION.nhanTaiNguyenTuMap(
-        list_TnNhan, p_idx)
-    for res_idx in range(5):
-        if list_res_reci[res_idx] > 0:
-            BOARD.Bank.Res_Cards[res_idx] -= list_res_reci[res_idx]
-            BOARD.Player[p_idx].Res_Cards[res_idx] += list_res_reci[res_idx]
-            SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
-                BOARD.Bank.Res_Cards[res_idx])
-            SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
-                BOARD.Player[p_idx].Res_Cards[res_idx])
-
-    set_notification(
-        list_player_name[p_idx] + ' got: ' + str(list_res_str))
-    hold_display(_(60), False)
-
-    # Nhận tài nguyên từ ô vừa đặt
-
-
-    # list_p_can_Rob = []
-    # for i in CONST.TILE_POINT[new_Robber_pos]:
-    #     if BOARD.Settlements_and_Cities_state[i] not in [0, p_idx+1, -p_idx-1]:
-    #         pl_idx = abs(BOARD.Settlements_and_Cities_state[i])-1
-    #         if sum(BOARD.Player[pl_idx].Res_Cards) > 0 and pl_idx not in list_p_can_Rob:
-    #             list_p_can_Rob.append(pl_idx)
-
-    # if len(list_p_can_Rob) > 0:
-    #     if len(list_p_can_Rob) > 1:
-    #         set_notification("Click on the name of player who u want to rob")
-
-    #         ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    #         print(11112)
-    #         if list_player_type[p_idx] == 'H':
-    #             chosen_player = ACTION_INTERFACE.chonNguoiChoi(list_p_can_Rob)
-    #             chosen_player_numba = (chosen_player - p_idx) % 4 + 82
-    #         else:
-    #             chosen_player_numba, tf, pf = list_player[p_idx](
-    #                 Cyka_Blyat.get_player_state(env_state), [0], [0])
-    #             chosen_player = (p_idx + chosen_player_numba - 82) % 4
-
-    #     else:
-    #         chosen_player = list_p_can_Rob[0]
-    #         chosen_player_numba = (chosen_player - p_idx) % 4 + 82
-
-    #     p_res_before = get_res(env_state, chosen_player)
-    #     print(p_res_before, 'p_res_before')
-    #     print(p_idx, chosen_player, chosen_player_numba)
-    #     aa = env_state.copy()
-    #     res_Rob = Cyka_Blyat.step(env_state, chosen_player_numba)
-    #     p_res_after = get_res(env_state, chosen_player)
-
-    #     # sub_res = p_res_before - p_res_after
-    #     # try:
-    #     #     res_Rob = numpy.where(sub_res == 1)[0][0]
-    #     # except:
-    #     #     print(list(aa))
-
-
-    #     '''Cướp tài nguyên'''
-    #     BOARD.Player[chosen_player].Res_Cards[res_Rob] -= 1
-    #     SPRITE.Player[chosen_player].Number_Res_Cards[res_Rob].set_value(
-    #         BOARD.Player[chosen_player].Res_Cards[res_Rob])
-    #     ANIMATION.TnTuNguoiChoiNaySangNguoiNguoiKhac(
-    #         p_idx, chosen_player, res_Rob)
-    #     BOARD.Player[p_idx].Res_Cards[res_Rob] += 1
-    #     SPRITE.Player[p_idx].Number_Res_Cards[res_Rob].set_value(
-    #         BOARD.Player[p_idx].Res_Cards[res_Rob])
-
-def datNha(p_idx, list_diemCoTheDat):
-    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    print(11113)
-    # if list_player_type[p_idx] == 'H':
-    #     diemDatNha = ACTION_INTERFACE.chonDiem(
-    #         list_diemCoTheDat, SPRITE.Point_highlight_circle, Image.Small_highlight_circle, Image.Small_highlight_circle_white)
-    # else:
-    #     diemDatNha, tf, pf = list_player[p_idx](
-    #         Cyka_Blyat.get_player_state(env_state), [0], [0])
-    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-
-
-    env.stepEnv(env_state, diemDatNha)
-
-    BOARD.Settlements_and_Cities_state[diemDatNha] = p_idx+1
-    BOARD.Player[p_idx].Remaining_Settlements -= 1
-    ANIMATION.datNha(diemDatNha, p_idx, 0)
-    BOARD.Player[p_idx].Score += 1
-    SPRITE.Player[p_idx].Score.set_value(
-        f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
-    for port_idx in range(9):
-        if diemDatNha in CONST.PORT_POINT[port_idx]:
-            if BOARD.Port_order[port_idx] == 5:
-                BOARD.Player[p_idx].Card_exchange_rate = numpy.minimum(
-                    BOARD.Player[p_idx].Card_exchange_rate, numpy.full(5, 3))
-            else:
-                BOARD.Player[p_idx].Card_exchange_rate[BOARD.Port_order[port_idx]] = 2
-
-            break
-
-    # print('Port:', BOARD.Player[p_idx].Owned_Ports)
-    # print('Card_exchange', BOARD.Player[p_idx].Card_exchange_rate)
-    return diemDatNha
-
-def datThanhPho(p_idx, list_diemCoTheDat):
-    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    print(11114)
-    # if list_player_type[p_idx] == 'H':
-    #     diemDatNha = ACTION_INTERFACE.chonDiem(
-    #         list_diemCoTheDat, SPRITE.Point_highlight_circle, Image.Small_highlight_circle, Image.Small_highlight_circle_white)
-    # else:
-    #     diemDatNha, tf, pf = list_player[p_idx](
-    #         Cyka_Blyat.get_player_state(env_state), [0], [0])
-
-    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-
-    env.stepEnv(env_state, diemDatNha)
-
-    # print('Điểm đặt nhà:', diemDatNha)
-    BOARD.Settlements_and_Cities_state[diemDatNha] = -p_idx-1
-    BOARD.Player[p_idx].Remaining_Cities -= 1
-    BOARD.Player[p_idx].Remaining_Settlements += 1
-    ANIMATION.datNha(diemDatNha, p_idx, 1)
-    BOARD.Player[p_idx].Score += 1
-    SPRITE.Player[p_idx].Score.set_value(
-        f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
-
-    return diemDatNha
-
-
-def datDuong(p_idx, list_DuongCoTheDat):
-    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    print(11115)
-    duongDuocChon = 9999999
-    # if list_player_type[p_idx] == 'H':
-    #     duongDuocChon = ACTION_INTERFACE.chonDiem(
-    #         list_DuongCoTheDat, SPRITE.Road_highlight_circle, Image.Small_highlight_circle, Image.Small_highlight_circle_white)
-    #     diem_t1 = int(env_state[231])
-    #     for point in CONST.ROAD_POINT[duongDuocChon]:
-    #         if point != diem_t1:
-    #             Cyka_Blyat.step(env_state, point)
-    #             break
-    # else:
-    diem_t1 = int(env_state[231])
-    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-    env.stepEnv(env_state, diem_t2)
-    for road_idx in range(72):
-        if diem_t1 in CONST.ROAD_POINT[road_idx] and diem_t2 in CONST.ROAD_POINT[road_idx]:
-            duongDuocChon = road_idx
-            break
-
-    if duongDuocChon == 999999:
-        print(diem_t1, diem_t2)
-        input('ajshdghasgdhasgdhjasgdhgashdgashjdgashjgdjasdh')
-
-    BOARD.Roads_state[duongDuocChon] = p_idx + 1
-    BOARD.Player[p_idx].Remaining_Roads -= 1
-    ANIMATION.datDuong(duongDuocChon, p_idx)
-
-    longest_road_player = CHECK.conDuongDaiNhat_1(p_idx)
-    BOARD.Player[p_idx].Current_Longest_Road_Length = longest_road_player
-    SPRITE.Player[p_idx].Current_longest_road_length.set_value(
-        longest_road_player)
-
-
-def datDuongGiuaGame(p_idx, list_DuongCoTheDat):
-    ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    print(11116)
-    # if list_player_type[p_idx] == 'H':
-    #     duongDuocChon = ACTION_INTERFACE.chonDiem(
-    #         list_DuongCoTheDat, SPRITE.Road_highlight_circle, Image.Small_highlight_circle, Image.Small_highlight_circle_white)
-    #     for point in CONST.ROAD_POINT[duongDuocChon]:
-    #         Cyka_Blyat.step(env_state, point)
-
-    # else:
-    diem_t1, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-    env.stepEnv(env_state, diem_t1)
-    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-    env.stepEnv(env_state, diem_t2)
-    for road_idx in range(72):
-        if diem_t1 in CONST.ROAD_POINT[road_idx] and diem_t2 in CONST.ROAD_POINT[road_idx]:
-            duongDuocChon = road_idx
-            break
-
-    # print('Điểm đặt đường:', duongDuocChon)
-
-    BOARD.Roads_state[duongDuocChon] = p_idx + 1
-    BOARD.Player[p_idx].Remaining_Roads -= 1
-    ANIMATION.datDuong(duongDuocChon, p_idx)
-
-    longest_road_player = CHECK.conDuongDaiNhat_1(p_idx)
-    BOARD.Player[p_idx].Current_Longest_Road_Length = longest_road_player
-    SPRITE.Player[p_idx].Current_longest_road_length.set_value(
-        longest_road_player)
-
-
-def traNhieuTN(p_idx, list_res_idx):
-    for res_idx in list_res_idx:
-        BOARD.Player[p_idx].Res_Cards[res_idx] -= 1
-        SPRITE.Player[p_idx].Number_Res_Cards[res_idx].set_value(
-            BOARD.Player[p_idx].Res_Cards[res_idx])
-        ANIMATION.traTaiNguyenBank(p_idx, res_idx)
-        BOARD.Bank.Res_Cards[res_idx] += 1
-        SPRITE.Bank.Number_Res_Cards[res_idx].set_value(
-            BOARD.Bank.Res_Cards[res_idx])
-
-def check_largest_Army(p_idx):
-    if BOARD.Current_Largest_Army_idx == p_idx:
-        BOARD.Current_Largest_Army = BOARD.Player[p_idx].Used_Knight_Cards
-    else:
-        if BOARD.Player[p_idx].Used_Knight_Cards > BOARD.Current_Largest_Army:  # Lớn hơn
-            print(BOARD.Player[p_idx].Used_Knight_Cards,
-                  BOARD.Current_Largest_Army, 'muahahahahahahahahaha')
-
-            old_p_idx = BOARD.Current_Largest_Army_idx
-            if old_p_idx != 9999:
-                BOARD.Player[old_p_idx].Score -= 2
-
-            BOARD.Player[p_idx].Score += 2
-            if old_p_idx != 9999:
-                SPRITE.Player[old_p_idx].Score.set_value(
-                    f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
-
-            SPRITE.Player[p_idx].Score.set_value(
-                f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
-
-            BOARD.Current_Largest_Army_idx = p_idx
-            BOARD.Current_Largest_Army = BOARD.Player[p_idx].Used_Knight_Cards
-            SPRITE.Player[p_idx].Icon_largest_army.set_image(
-                Image.Largest_army_highlight)
-            if old_p_idx != 9999:
-                SPRITE.Player[old_p_idx].Icon_largest_army.set_image(
-                    Image.Largest_army)
-
-
-def check_longest_Road():
-    list_p_longest_Road = []
-    for p_idx in range(4):
-        l_ = CHECK.conDuongDaiNhat_1(p_idx)
-        list_p_longest_Road.append(l_)
-        BOARD.Player[p_idx].Current_Longest_Road_Length = l_
-        SPRITE.Player[p_idx].Current_longest_road_length.set_value(
-            BOARD.Player[p_idx].Current_Longest_Road_Length)
-
-    longgest_length = max(list_p_longest_Road)
-    if longgest_length < 5:
-        if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ông nào có danh hiệu
-            pass
-        else:  # Có ông có danh hiệu nhưng vừa bị cướp con đường dài nhất
-            old_p_idx = BOARD.Current_Longest_Road_idx
-            BOARD.Current_Longest_Road_idx = 9999
-            BOARD.Current_Longest_Road = longgest_length
-            BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
-            SPRITE.Player[old_p_idx].Score.set_value(
-                f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
-            SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
-                Image.Longest_road)
-    else:
-        list_p_longest = []
-        for i in range(4):
-            if list_p_longest_Road[i] == longgest_length:
-                list_p_longest.append(i)
-
-        if len(list_p_longest) == 1:  # Có đúng 1 ông dài nhất
-            if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ai có longest road, ghi nhận danh hiệu cho ông này
-                # Bàn chơi ghi nhận
-                BOARD.Current_Longest_Road_idx = list_p_longest[0]
-                BOARD.Current_Longest_Road = longgest_length  # Bàn chơi ghi nhận
-                BOARD.Player[list_p_longest[0]].Score += 2  # Cộng điểm
-                SPRITE.Player[list_p_longest[0]].Score.set_value(
-                    f'{BOARD.Player[list_p_longest[0]].Score} ({BOARD.Player[list_p_longest[0]].Dev_Cards[4]})')  # Cập nhật lên màn hình
-                SPRITE.Player[list_p_longest[0]].Icon_longest_road.set_image(
-                    Image.Longest_road_highlight)  # Cập nhật highlight
-            else:  # Đã có longest_road
-                # Cùng người, không thay đổi gì
-                if BOARD.Current_Longest_Road_idx == list_p_longest[0]:
-                    BOARD.Current_Longest_Road = longgest_length
-                else:  # Khác người, đổi danh hiệu cho ông mới, trừ điểm ông cũ
-                    old_p_idx = BOARD.Current_Longest_Road_idx
-                    # Bàn chơi ghi nhận
-                    BOARD.Current_Longest_Road_idx = list_p_longest[0]
-                    BOARD.Current_Longest_Road = longgest_length  # Bàn chơi ghi nhận
-                    # Cộng điểm thằng mới
-                    BOARD.Player[list_p_longest[0]].Score += 2
-                    SPRITE.Player[list_p_longest[0]].Score.set_value(
-                        f'{BOARD.Player[list_p_longest[0]].Score} ({BOARD.Player[list_p_longest[0]].Dev_Cards[4]})')
-                    BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
-                    SPRITE.Player[old_p_idx].Score.set_value(
-                        f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
-                    SPRITE.Player[list_p_longest[0]].Icon_longest_road.set_image(
-                        Image.Longest_road_highlight)  # Highlight
-                    SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
-                        Image.Longest_road)
-        else:  # Có 2 trở lên người cùng có con đường dài nhất
-            if BOARD.Current_Longest_Road_idx in list_p_longest:  # Một trong số 2 người này đang sở hữu danh hiệu
-                BOARD.Current_Longest_Road = longgest_length
-            else:  # tất cả người có con đường dài nhất đều không nắm giữ danh hiệu
-                if BOARD.Current_Longest_Road_idx == 9999:  # Chưa có ai có danh hiệu
-                    pass
-                else:  # Đang có, tức là ông đang nắm giữu bị cướp con đường dài nhất, cần thu hồi lại
-                    old_p_idx = BOARD.Current_Longest_Road_idx
-                    BOARD.Current_Longest_Road_idx = 9999
-                    BOARD.Current_Longest_Road = longgest_length
-                    BOARD.Player[old_p_idx].Score -= 2  # Trừ điểm thằng cũ
-                    SPRITE.Player[old_p_idx].Score.set_value(
-                        f'{BOARD.Player[old_p_idx].Score} ({BOARD.Player[old_p_idx].Dev_Cards[4]})')
-                    SPRITE.Player[old_p_idx].Icon_longest_road.set_image(
-                        Image.Longest_road)
-
-def check_win():
-    list_score = []
-    for p_idx in range(4):
-        list_score.append(
-            BOARD.Player[p_idx].Score + BOARD.Player[p_idx].Dev_Cards[4])
-
-    max_score = max(list_score)
-    if max_score >= 10:
-        for i in range(3, -1, -1):
-            if list_score[i] == max_score:
-                set_notification(
-                    'Congratulation! ' + list_player_name[i] + ' win this freeking Game!')
-                hold_display(999999, False)
 
 # Đầu game
 temp =     [0, 0, 1, 1, 2, 2, 3, 3, 0, 3, 1, 2, 2, 1, 3, 0]
@@ -947,10 +849,10 @@ temp_num = [1, 0, 2, 0, 3, 0, 4, 0, 4, 0, 3, 0, 2, 0, 1, 0]
 for i in range(16):
     p_idx = temp[i]
     BOARD.main_id = p_idx
-    print(env_state[230])
-    # 0Phong # Viết hàm này để so sánh
+
     compare_numba_graphic(BOARD, env_state)
-    # print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
+
+    print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
 
     # Đổi màu tên người chơi chính
     if i > 0:
@@ -962,24 +864,24 @@ for i in range(16):
     hold_display(_(60), False)
 
     if temp_num[i] != 0:
-
         for j in range(temp_num[i]):
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
             NlChon_Numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-            
+
             env.stepEnv(env_state, NlChon_Numba)
             NlChon = NlChon_Numba - 59
 
+            # Animation
             BOARD.Bank.ResBank[NlChon] -= 1
             SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
 
             tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
-            
+
             des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
             tempDy.move(des, 'center', _(60))
             layer_3.add(tempDy)
             hold_display(_(60), True)
-            
+
             BOARD.Player[p_idx].ResBank[NlChon] += 1
             SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
 
@@ -987,7 +889,7 @@ for i in range(16):
     else:
         set_notification(list_player_name[p_idx]+"is placing settlement")
 
-        list_diemCoTheDat = CHECK.listDiemCoTheDatDauGame()
+        list_diemCoTheDat = []
 
         diemDatNha = datNha(p_idx, list_diemCoTheDat)
 
@@ -1017,23 +919,28 @@ for i in range(16):
         list_DuongCoTheDat = CONST.POINT_ROAD[diemDatNha]
 
         datDuong(p_idx, list_DuongCoTheDat)
- 
 
-# Mỗi turn
+
+
 def get_bank_dev(env):
     return env[53:58].astype(int)
 
+
+# Mỗi turn
+
 for i in range(10000):
-    # trade_remain = 1
+    layTaiNguyenTuKho = True
+
     layer_0.remove(SPRITE.Dices)
     layer_1.empty()
+
     p_idx = i % 4
     BOARD.main_id = p_idx
+
     print('######################################################## Đến người người chơi id',
           BOARD.main_id, env_state[230] % 4)
-    # compare_numba_graphic(BOARD, env_state)
-
-    # print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
+    
+    print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
     change_player_name_color((p_idx-1) % 4, RGB_color.SPRING_GREEN)
     change_player_name_color(p_idx, RGB_color.WHITE)
     set_notification(list_player_name[p_idx]+"'s turn")
@@ -1042,107 +949,81 @@ for i in range(10000):
     check_dev = False
 
     list_action = CHECK.listActionDauMoiTurn(p_idx)
-    action = 'Ahihi khong co cheese'
+
+    action = 'Ahihi'
 
     while action != 'pass_turn':
-        # Đang không tự auto roll_dice
-
-        print('1111bbbb')
-        compare_numba_graphic(BOARD, env_state)
         layer_1.empty()
         set_notification(list_player_name[p_idx]+"'s turn")
 
-        ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-        print(11119)
         temp_env = env_state.copy()
 
-        temp_dev_1 = get_bank_dev(env_state)
-        # if list_player_type[p_idx] == 'H':
-        #     action = ACTION_INTERFACE.chonAction(p_idx, list_action)
-        #     action_idx = 9999
-        #     # Đoạn này convert action từ str sang số
-        #     for act_idx in dict_idx_str.keys():
-        #         if dict_idx_str[act_idx] == action:
-        #             action_idx = int(act_idx)
-        #             break
+        if len(list_action) == 1 and list_action[0] == 'roll_dice' and ((BOARD.Player[BOARD.main_id].Dev_Cards[0:4] == 0).all() or check_dev):
+            action = 'roll_dice'
+        else:
+            compare_numba_graphic(BOARD, env_state)
+            ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+            temp_dev_1 = get_bank_dev(env_state)
 
-        # else:
-        action_idx, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-        dict_idx_str = {
-            54: 'roll_dice',
-            55: 'knight',
-            56: 'roadbuilding',
-            57: 'yearofplenty',
-            58: 'monopoly',
-            88: 'pass_turn',
-            83: 'build_road',
-            84: 'build_settlement',
-            85: 'build_city',
-            86: 'buy_dev',
-            87: 'trade_bank',
-        }
+            action_idx, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            dict_idx_str = {
+                54: 'roll_dice',
+                55: 'knight',
+                56: 'roadbuilding',
+                57: 'yearofplenty',
+                58: 'monopoly',
+                88: 'pass_turn',
+                83: 'build_road',
+                84: 'build_settlement',
+                85: 'build_city',
+                86: 'buy_dev',
+                87: 'trade_bank',
+                94: 'take_res_from_storage'
+            }
 
-        action = dict_idx_str[action_idx] # Dịch sang string tại đây
+            action = dict_idx_str[action_idx] # Dịch sang string tại đây
 
-        env.stepEnv(env_state, action_idx)
-
-
-
-        # print('Action:', action)
+            env.stepEnv(env_state, action_idx)
+        
+        print(action)
 
         if action == 'roll_dice':
-            # total_dice = ANIMATION.rollDice()
-
             total_dice = int(env_state[228])
             min_dice = None
             if total_dice <= 7:
                 min_dice = 1
             else:
                 min_dice = total_dice - 6
-            try:
-                dice_1 = random.randint(min_dice, min(6, total_dice-1))
-                dice_2 = total_dice - dice_1
-            except:
-                print(list(temp_env), 'iuasdiashdjkas')
+            
+            dice_1 = random.randint(min_dice, min(6, total_dice-1))
+            dice_2 = total_dice - dice_1
+
             ANIMATION.rollDice(dice_1, dice_2)
 
             hold_display(_(60), False)
 
-            # total_dice = 7
-
             if total_dice == 7:
-                # print(list(env_state))
                 list_num_return = CHECK.soLuongTaiNguyenTraDo7(p_idx)
-                print(list_num_return)
+
                 for j in range(4):
                     if list_num_return[j] > 0:
                         sub_p_idx = (p_idx + j) % 4
                         if j != 0:
                             change_player_name_color(
                                 sub_p_idx, RGB_color.BLACK)
-
+                        
                         set_notification(
                             list_player_name[sub_p_idx]+': resources overlimited, must return '+str(list_num_return[j]))
                         hold_display(_(120), False)
                         set_notification(
                             list_player_name[sub_p_idx]+' is choosing resource to return')
+                        
                         for k in range(list_num_return[j]):
-                            list_tnCoTheTra = [res_idx for res_idx in range(
-                                5) if BOARD.Player[sub_p_idx].Res_Cards[res_idx] > 0]
-
                             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                            print(11110)
-                            # if list_player_type[sub_p_idx] == 'H':
-                            #     res_idx_return = ACTION_INTERFACE.chonTaiNguyen(
-                            #         sub_p_idx, list_tnCoTheTra)
-                            #     res_idx_return_numba = res_idx_return + 95
-                            # else:
                             res_idx_return_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-                            res_idx_return = res_idx_return_numba - 59 # Dịch sang 0, 1, 2, 3, 4
+                            res_idx_return = res_idx_return_numba - 89 # Dịch sang 0, 1, 2, 3, 4
 
                             env.stepEnv(env_state, res_idx_return_numba)
-
-                            # print('Nguyên liệu trả:', RES_NAME[res_idx_return])
 
                             BOARD.Player[sub_p_idx].Res_Cards[res_idx_return] -= 1
                             SPRITE.Player[sub_p_idx].Number_Res_Cards[res_idx_return].set_value(
@@ -1152,11 +1033,11 @@ for i in range(10000):
                             BOARD.Bank.Res_Cards[res_idx_return] += 1
                             SPRITE.Bank.Number_Res_Cards[res_idx_return].set_value(
                                 BOARD.Bank.Res_Cards[res_idx_return])
-
+                        
                         if j != 0:
                             change_player_name_color(
                                 sub_p_idx, RGB_color.SPRING_GREEN)
-
+                
                 diChuyenRobber(p_idx)
             
             else:  # Trả tài nguyên cho người chơi
@@ -1206,14 +1087,10 @@ for i in range(10000):
                         set_notification(
                             list_player_name[sub_p_idx] + ' got: ' + str(list_res_str))
                         hold_display(_(60), False)
-
+        
         elif action == 'buy_dev':
             traNhieuTN(p_idx, [2, 3, 4])
 
-            # Lấy thẻ dev từ bank
-            # dev_idx = BOARD.Bank.Dev_Cards[0]
-            # BOARD.Bank.Dev_Cards = numpy.delete(BOARD.Bank.Dev_Cards, 0)
-            # SPRITE.Bank.Number_Dev_Cards.set_value(len(BOARD.Bank.Dev_Cards))
             temp_dev_2 = get_bank_dev(env_state)
             temp_dev_3 = temp_dev_1 - temp_dev_2
             dev_idx = np.where(temp_dev_3 == 1)[0][0]
@@ -1236,7 +1113,7 @@ for i in range(10000):
                 SPRITE.Player[p_idx].Score.set_value(
                     f'{BOARD.Player[p_idx].Score} ({BOARD.Player[p_idx].Dev_Cards[4]})')
                 check_win()
-
+        
         elif action == 'build_road':
             traNhieuTN(p_idx, [0, 1])
             set_notification(list_player_name[p_idx]+"is placing road")
@@ -1259,7 +1136,7 @@ for i in range(10000):
             set_notification(list_player_name[p_idx]+"is building city")
             datThanhPho(p_idx, list_diemCoTheDat)
             check_win()
-        
+
         elif action == 'trade_bank':
             layer_1.empty()
             set_notification(
@@ -1278,14 +1155,8 @@ for i in range(10000):
                     list_tnCoTheChon.remove(res_idx)
 
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            print(1111113)
-            # if list_player_type[p_idx] == 'H':
-            #     res_pick_idx = ACTION_INTERFACE.chonTaiNguyen(
-            #         p_idx, list_tnCoTheChon)
-            #     res_pick_idx_numba = res_pick_idx + 95
-            # else:
             res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-            res_pick_idx = res_idx_return_numba - 59 # Dịch sang 0,1,2,3,4
+            res_pick_idx = res_pick_idx_numba - 89 # Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)
 
@@ -1307,14 +1178,8 @@ for i in range(10000):
                 5) if BOARD.Bank.Res_Cards[res_idx] > 0 and res_idx != res_pick_idx]
 
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            print(1111114)
-            # if list_player_type[p_idx] == 'H':
-            #     res_pick_idx = ACTION_INTERFACE.chonTaiNguyen(
-            #         p_idx, list_tnCoTheChon)
-            #     res_pick_idx_numba = res_pick_idx + 59
-            # else:
             res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-            res_pick_idx = res_idx_return_numba - 59 #Dịch sang 0,1,2,3,4
+            res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)
 
@@ -1326,7 +1191,7 @@ for i in range(10000):
             BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
             SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
                 BOARD.Player[p_idx].Res_Cards[res_pick_idx])
-
+        
         elif action in DEV_NAME:
             check_dev = True
             set_notification(
@@ -1359,14 +1224,8 @@ for i in range(10000):
                         5) if BOARD.Bank.Res_Cards[res_idx] > 0]
                     if len(list_tnCoTheChon) > 0:
                         ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                        print(1111115)
-                        # if list_player_type[p_idx] == 'H':
-                        #     res_pick_idx = ACTION_INTERFACE.chonTaiNguyen(
-                        #         p_idx, list_tnCoTheChon)
-                        #     res_pick_idx_numba = res_pick_idx + 59
-                        # else:
                         res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-                        res_pick_idx = res_idx_return_numba - 59 #Dịch sang 0,1,2,3,4
+                        res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
                         env.stepEnv(env_state, res_pick_idx_numba)
 
@@ -1379,17 +1238,11 @@ for i in range(10000):
                         BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
                         SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
                             BOARD.Player[p_idx].Res_Cards[res_pick_idx])
-
+            
             elif action == 'monopoly':
                 ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                print(1111116)
-                # if list_player_type[p_idx] == 'H':
-                #     res_pick_idx = ACTION_INTERFACE.chonTaiNguyen(
-                #         p_idx, [0, 1, 2, 3, 4])
-                #     res_pick_idx_numba = res_pick_idx + 59
-                # else:
                 res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-                res_pick_idx = res_idx_return_numba - 59 #Dịch sang 0,1,2,3,4
+                res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
 
                 env.stepEnv(env_state, res_pick_idx_numba)
@@ -1407,11 +1260,11 @@ for i in range(10000):
                             BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
                             SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
                                 BOARD.Player[p_idx].Res_Cards[res_pick_idx])
-
+            
         elif action == 'take_res_from_storage':
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
             res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
-            res_pick_idx = res_idx_return_numba  - 59 #Dịch sang 0,1,2,3,4
+            res_pick_idx = res_pick_idx_numba  - 59 #Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)
 
@@ -1431,14 +1284,15 @@ for i in range(10000):
 
             layer_3.empty()
 
-
+            layTaiNguyenTuKho = False
+        
         #########################
         if action == 'roll_dice':
             list_action.remove('roll_dice')
             list_action.append('pass_turn')
 
             list_action = CHECK.actionCoTheLam(
-                p_idx, list_action, trade_remain=0)
+                p_idx, list_action, layTaiNguyenTuKho)
 
         elif action in DEV_NAME:
             if 'roll_dice' in list_action:
@@ -1449,11 +1303,11 @@ for i in range(10000):
                         list_action.remove(dev_name)
 
                 list_action = CHECK.actionCoTheLam(
-                    p_idx, list_action, trade_remain=0)
+                    p_idx, list_action, layTaiNguyenTuKho)
         
         elif action == 'take_res_from_storage':
             list_action.remove('take_res_from_storage')
 
         else:
             list_action = CHECK.actionCoTheLam(
-                p_idx, list_action, trade_remain=0)
+                p_idx, list_action, layTaiNguyenTuKho)

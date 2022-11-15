@@ -10,7 +10,6 @@ DEV_NAME = ['knight', 'roadbuilding', 'yearofplenty', 'monopoly', 'vp']
 pygame.init()
 pygame.display.set_mode((1600, 900))
 
-
 class Image:
     Robber = pygame.transform.smoothscale(
         pygame.image.load('Image/icon_robber.png'), (55, 55))
@@ -75,29 +74,6 @@ class Image:
 
 Image.set_color(PLAYER_COLOR)
 
-def convert_env_to_board(env: np.ndarray):
-    BOARD = Board()
-
-    # Thứ tự mảnh ghép
-    BOARD.Tile_order = env[0:19].astype(int)
-    temp = RES_NAME + ['Desert']
-    print('Tile:', [temp[i] for i in BOARD.Tile_order])
-
-    #
-    BOARD.Robber_location = int(env[19])
-    print('Robbber pos:', BOARD.Robber_location)
-
-    #
-    BOARD.Prob_order = env[20:39].astype(int)
-    print('Prob:', BOARD.Prob_order)
-
-    #
-    BOARD.Port_order = env[39:48].astype(int)
-    temp = RES_NAME + ['3:1 port']
-    print('Port:', [temp[i] for i in BOARD.Port_order])
-
-    return BOARD
-
 class RGB_color:
     BLACK = (0, 0, 0)
     GRAY = (127, 127, 127)
@@ -114,7 +90,6 @@ class RGB_color:
     OCEAN = (0, 127, 255)
     RASPBERRY = (255, 0, 127)
     TURQUOISE = (0, 255, 127)
-
 
 class CONST:
     TILE_CENTER_POS = [(1122, 210), (1263, 210), (1334, 331), (1404, 453), (1334, 574), (1263, 696), (1122, 696), (981, 696), (911, 574), (840, 453), (911, 331), (981, 210), (1052, 331), (981, 453), (1052, 574), (1193, 574), (1263, 453), (1193, 331), (1122, 453)]
@@ -140,7 +115,7 @@ class CONST:
 class Player:
     def __init__(self) -> None:
         self.reset()
-
+    
     def reset(self):
         self.Score = 0
         self.Res_Cards = np.full(5, 0)
@@ -163,11 +138,10 @@ class Bank:
         self.ResBank = np.full(5, 4)
         self.Dev_Cards = np.array([14, 2, 2, 2, 5])
 
-
 class Board:
     def __init__(self) -> None:
         self.reset()
-
+    
     def reset(self):
         self.main_id = 0
         self.Player = [Player() for i in range(4)]
@@ -209,7 +183,7 @@ class Board:
         self.Current_Longest_Road = 4
         self.Current_Largest_Army_idx = 9999
         self.Current_Longest_Road_idx = 9999
-
+    
     def draw_map(self, screen: pygame.Surface):
         screen.fill((50, 150, 200))
         temp_img = pygame.image.load('Image/landing_page_map.png')
@@ -258,6 +232,29 @@ class Board:
 
         return screen.copy()
     
+def convert_env_to_board(env: np.ndarray):
+    BOARD = Board()
+
+    # Thứ tự mảnh ghép
+    BOARD.Tile_order = env[0:19].astype(int)
+    temp = RES_NAME + ['Desert']
+    print('Tile:', [temp[i] for i in BOARD.Tile_order])
+
+    #
+    BOARD.Robber_location = int(env[19])
+    print('Robbber pos:', BOARD.Robber_location)
+
+    #
+    BOARD.Prob_order = env[20:39].astype(int)
+    print('Prob:', BOARD.Prob_order)
+
+    #
+    BOARD.Port_order = env[39:48].astype(int)
+    temp = RES_NAME + ['3:1 port']
+    print('Port:', [temp[i] for i in BOARD.Port_order])
+
+    return BOARD
+
 
 class Dynamic_Sprite(pygame.sprite.Sprite):
     def __init__(self, image, pos, align='center'):
@@ -439,8 +436,10 @@ class Player_sprite:
     def __init__(self, name, p_idx):
         self.Name = Static_Sprite(
             name, 28, RGB_color.SPRING_GREEN, (80, 305+150*p_idx), 'midtop')
+        
         self.Score = Static_Sprite(
             '0 (0)', 28, RGB_color.SPRING_GREEN, (80, 335+150*p_idx), 'midtop')
+        
         self.Icon_largest_army = Dynamic_Sprite(
             Image.Largest_army, (55, 380+150*p_idx), 'midtop')
         self.Icon_longest_road = Dynamic_Sprite(
@@ -449,14 +448,12 @@ class Player_sprite:
             0, 20, RGB_color.BLACK, (55, 420+150*p_idx), 'midtop')
         self.Current_longest_road_length = Static_Sprite(
             0, 20, RGB_color.BLACK, (105, 420+150*p_idx), 'midtop')
+
         self.Res_Cards = []
         self.ResBank = []
         self.Number_Res_Cards = []
         self.Number_ResBank = []
-        self.Trade_give_res = []
-        self.Trade_reci_res = []
-        self.Trade_number_give_res = []
-        self.Trade_number_reci_res = []
+
         self.Dev_Cards = []
         self.Number_Dev_Cards = []
         k = 0
@@ -469,54 +466,12 @@ class Player_sprite:
                 0, 20, RGB_color.BLACK, (200+50*k, 365+150*p_idx), 'bottomright'))
             self.Number_ResBank.append(Static_Sprite(
                 0, 20, RGB_color.BLACK, (470+50*k, 365+150*p_idx), 'bottomright'))
-            self.Trade_give_res.append(Dynamic_Sprite(
-                Image.Res_card[i], (410+50*k, 305+150*p_idx), 'topleft'))
-            self.Trade_reci_res.append(Dynamic_Sprite(
-                Image.Res_card[i], (410+50*k, 380+150*p_idx), 'topleft'))
-            self.Trade_number_give_res.append(Static_Sprite(
-                0, 20, RGB_color.BLACK, (450+50*k, 365+150*p_idx), 'bottomright'))
-            self.Trade_number_reci_res.append(Static_Sprite(
-                0, 20, RGB_color.BLACK, (450+50*k, 440+150*p_idx), 'bottomright'))
+            
             self.Dev_Cards.append(Dynamic_Sprite(
                 Image.Dev_card[i], (160+50*k, 380+150*p_idx), 'topleft'))
             self.Number_Dev_Cards.append(Static_Sprite(
                 0, 20, RGB_color.BLACK, (200+50*k, 440+150*p_idx), 'bottomright'))
             k += 1
-
-        self.Button = {
-            'build_road': Dynamic_Sprite(Image.Big_button_background.copy(), (410, 305+150*p_idx), 'topleft'),
-            'build_settlement': Dynamic_Sprite(Image.Big_button_background.copy(), (477, 305+150*p_idx), 'topleft'),
-            'build_city': Dynamic_Sprite(Image.Big_button_background.copy(), (410, 380+150*p_idx), 'topleft'),
-            'trade': Dynamic_Sprite(Image.Big_button_background.copy(), (477, 380+150*p_idx), 'topleft'),
-            'buy_dev': Dynamic_Sprite(Image.Big_button_background.copy(), (544, 305+150*p_idx), 'topleft'),
-            'pass_turn': Dynamic_Sprite(Image.Big_button_background.copy(), (544, 380+150*p_idx), 'topleft'),
-            'accept': Dynamic_Sprite(Image.Big_button_background.copy(), (410, 380+150*p_idx), 'topleft'),
-            'decline': Dynamic_Sprite(Image.Big_button_background.copy(), (544, 380+150*p_idx), 'topleft'),
-            'trade_bank': Dynamic_Sprite(Image.Bank, (30, 175), 'topleft')
-        }
-
-        __img_buy_dev = pygame.transform.smoothscale(
-            pygame.image.load('Image/icon_buy_dev_card.png'), (50, 50))
-        __img_trade = pygame.transform.smoothscale(
-            pygame.image.load('Image/icon_trade.png'), (50, 50))
-        __img_passturn = pygame.transform.smoothscale(
-            pygame.image.load('Image/icon_pass_turn.png'), (50, 50))
-        __img_icon_check = pygame.transform.smoothscale(
-            pygame.image.load('Image/icon_check.png'), (50, 50))
-        __img_icon_x = pygame.transform.smoothscale(
-            pygame.image.load('Image/icon_x.png'), (50, 50))
-
-        self.Button['build_road'].image.blit(
-            pygame.transform.smoothscale(Image.Roads[p_idx], (50, 50)), (5, 5))
-        self.Button['build_settlement'].image.blit(
-            pygame.transform.smoothscale(Image.Settlements[p_idx], (50, 50)), (5, 5))
-        self.Button['build_city'].image.blit(
-            pygame.transform.smoothscale(Image.Cities[p_idx], (50, 50)), (5, 5))
-        self.Button['trade'].image.blit(__img_trade, (5, 5))
-        self.Button['buy_dev'].image.blit(__img_buy_dev, (5, 5))
-        self.Button['pass_turn'].image.blit(__img_passturn, (5, 5))
-        self.Button['accept'].image.blit(__img_icon_check, (5, 5))
-        self.Button['decline'].image.blit(__img_icon_x, (5, 5))
 
 
 class Bank_sprite:
@@ -546,31 +501,27 @@ class Bank_sprite:
 class Sprite:
     def __init__(self, list_player_name) -> None:
         self.reset(list_player_name)
-
+    
     def reset(self, list_player_name):
         self.Robber = Dynamic_Sprite(Image.Robber, (-999, -999), 'midright')
         self.Notification = Dynamic_Sprite(multiline_surface(
             'Welcome to The Settlers of Catan!'), (0, 15), 'topleft')
         self.Player = [Player_sprite(list_player_name[i], i) for i in range(4)]
         self.Bank = Bank_sprite()
-        self.Point_highlight_circle = [Dynamic_Sprite(
-            Image.Small_highlight_circle, CONST.POINT_COORDINATE[i], 'center') for i in range(54)]
         self.Settlements_and_Cities = [Dynamic_Sprite(pygame.Surface(
             (30, 30)), CONST.POINT_COORDINATE[i], 'center') for i in range(54)]
-        self.Road_highlight_circle = [Dynamic_Sprite(
-            Image.Small_highlight_circle, CONST.ROAD_CENTER_POS[i], 'center') for i in range(72)]
-        self.Tile_highlight_circle = [Dynamic_Sprite(
-            Image.Big_highlight_circle, CONST.TILE_CENTER_POS[i], 'center') for i in range(19)]
-
-        self.Button_roll_dice = Dynamic_Sprite(
-            Image.Button_roll_dice, (477, 210), 'topleft')
-        self.Small_button_check = Dynamic_Sprite(
-            Image.Small_button_check, (3200, 1800), 'center')
-        self.Big_button_check = Dynamic_Sprite(
-            Image.Big_button_check, (50, 195), 'topleft')
+        
         self.Dices = [Dynamic_Sprite(pygame.Surface(
             (60, 60)), (477+67*i, 210), 'topleft') for i in range(2)]
+        
+        self.Point_highlight_circle = [Dynamic_Sprite(
+            Image.Small_highlight_circle, CONST.POINT_COORDINATE[i], 'center') for i in range(54)]
 
+        self.Road_highlight_circle = [Dynamic_Sprite(
+            Image.Small_highlight_circle, CONST.ROAD_CENTER_POS[i], 'center') for i in range(72)]
+
+        self.Tile_highlight_circle = [Dynamic_Sprite(
+            Image.Big_highlight_circle, CONST.TILE_CENTER_POS[i], 'center') for i in range(19)]
 
 def compare_numba_graphic(board: Board, env):
     check = False
@@ -582,14 +533,12 @@ def compare_numba_graphic(board: Board, env):
         s_ = 58 + 42*i
         if (env[s_:s_+5] != board.Player[i].Res_Cards).any():
             print('Khác tài nguyên người chơi', i, ': ', env[s_:s_+5], board.Player[i].Res_Cards)
-            print(env[229], env[254])
             check = True
 
         if (env[s_+5:s_+10] != board.Player[i].Dev_Cards).any():
             print('Khác thẻ dev người chơi', i, ': ', env[s_+5:s_+10], board.Player[i].Dev_Cards)
-            print(env[229], env[254])
             check = True
-    
+        
         if env[s_+35] != board.Player[i].Used_Knight_Cards:
             print('Khác số thẻ knight đã dùng người chơi', i, env[s_+35], board.Player[i].Used_Knight_Cards)
             check = True
@@ -601,7 +550,7 @@ def compare_numba_graphic(board: Board, env):
         if env[s_+10] != board.Player[i].Score:
             print('Khác điểm người chơi', i, env[s_+10], board.Player[i].Score)
             check = True
-        
+
     if board.Current_Largest_Army_idx != env[226]:
         if board.Current_Largest_Army_idx == 9999 and env[226] == -1:
             pass
@@ -625,6 +574,9 @@ def compare_numba_graphic(board: Board, env):
     
     if check:
         print(env[228])
-        input()
+        input('Saiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii')
     
     return True
+
+
+
