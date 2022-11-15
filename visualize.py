@@ -20,7 +20,7 @@ list_player_type = ['B', 'B', 'B', 'B']
 list_player_color = ['mysticblue', 'gold', 'silver', 'bronze']
 list_player = [random_player, random_player, random_player, random_player]
 
-SPEED = 15000
+SPEED = 100
 
 # Đừng chỉnh gì ở dưới đây
 
