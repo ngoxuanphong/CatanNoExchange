@@ -20,7 +20,7 @@ list_player_type = ['B', 'B', 'B', 'B']
 list_player_color = ['mysticblue', 'gold', 'silver', 'bronze']
 list_player = [random_player, random_player, random_player, random_player]
 
-SPEED = 100
+SPEED = 10000
 
 # Đừng chỉnh gì ở dưới đây
 
@@ -843,8 +843,8 @@ ANIMATION = Animation()
 ###########################################################################
 
 # Đầu game
-temp =     [0, 0, 1, 1, 2, 2, 3, 3, 0, 3, 1, 2, 2, 1, 3, 0]
-temp_num = [1, 0, 2, 0, 3, 0, 4, 0, 4, 0, 3, 0, 2, 0, 1, 0]
+temp =     [0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1, 0, 0]
+temp_num = [1, 0, 2, 0, 3, 0, 4, 0, 1, 0, 2, 0, 3, 0, 4, 0]
 
 for i in range(16):
     p_idx = temp[i]
@@ -1247,20 +1247,35 @@ for i in range(10000):
 
                 env.stepEnv(env_state, res_pick_idx_numba)
 
-                # print(res_pick_idx)
-                for j in range(1, 4):
-                    sub_p_idx = (p_idx + j) % 4
-                    if BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx] > 0:
-                        for k in range(BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx]):
-                            BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx] -= 1
-                            SPRITE.Player[sub_p_idx].Number_Res_Cards[res_pick_idx].set_value(
-                                BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx])
-                            ANIMATION.TnTuNguoiChoiNaySangNguoiNguoiKhac(
-                                p_idx, sub_p_idx, res_pick_idx)
-                            BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
-                            SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
-                                BOARD.Player[p_idx].Res_Cards[res_pick_idx])
-            
+                # for j in range(1, 4):
+                #     sub_p_idx = (p_idx + j) % 4
+                #     if BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx] > 0:
+                #         for k in range(BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx]):
+                #             BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx] -= 1
+                #             SPRITE.Player[sub_p_idx].Number_Res_Cards[res_pick_idx].set_value(
+                #                 BOARD.Player[sub_p_idx].Res_Cards[res_pick_idx])
+                #             ANIMATION.TnTuNguoiChoiNaySangNguoiNguoiKhac(
+                #                 p_idx, sub_p_idx, res_pick_idx)
+                #             BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
+                #             SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
+                #                 BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+
+                print('Nguyên liệu lấy khi dùng thẻ nomopoly', res_pick_idx, 'Nguyên liệu bank còn', BOARD.Bank.Res_Cards[res_pick_idx])
+                if BOARD.Bank.Res_Cards[res_pick_idx] > 0:
+                    so_res_lay = 19 - BOARD.Bank.Res_Cards[res_pick_idx]
+                    if so_res_lay > BOARD.Bank.Res_Cards[res_pick_idx]:
+                        so_res_lay = BOARD.Bank.Res_Cards[res_pick_idx]
+                    print('Số nguyên liệu lấy', so_res_lay, BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+                    for k in range(so_res_lay):
+                        BOARD.Bank.Res_Cards[res_pick_idx] -= 1
+                        SPRITE.Bank.Number_Res_Cards[res_pick_idx].set_value(
+                            BOARD.Bank.Res_Cards[res_pick_idx])
+                        ANIMATION.bankTraTaiNguyen(p_idx, res_pick_idx)
+                        BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
+                        SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
+                            BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+                    print('Số nguyên liệu sau khi lấy', BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+                # raise 'Done'
         elif action == 'take_res_from_storage':
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
             res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
