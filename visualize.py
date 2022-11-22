@@ -293,7 +293,7 @@ def diChuyenRobber(p_idx):
     env.stepEnv(env_state, new_Robber_pos_numba)
     ANIMATION.Robber_move(new_Robber_pos)
     BOARD.Robber_location = new_Robber_pos
-    if BOARD.Tile_order[new_Robber_pos] != 5:
+    if BOARD.Tile_order[new_Robber_pos] != 5 and BOARD.Bank.Res_Cards[BOARD.Tile_order[new_Robber_pos]] > 0:
         list_tile_nearest = [new_Robber_pos]
     else:
         list_tile_nearest = []
