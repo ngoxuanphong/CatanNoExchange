@@ -9,7 +9,7 @@ def random_player(p_state, temp_file, per_file):
     arr_action = env.getValidActions(p_state)
     arr_action = np.where(arr_action == 1)[0]
     action = np.random.choice(arr_action)
-    print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
+    ###print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
     return action, temp_file, per_file
 
 from env import ROAD_PRICE, CITY_PRICE, SETTLEMENT_PRICE, DEV_PRICE as DEV_CARD_PRICE
@@ -214,7 +214,7 @@ def datDuong(p_idx, list_DuongCoTheDat):
             break
     
     if duongDuocChon == 999999:
-        print(diem_t1, diem_t2)
+        ###print(diem_t1, diem_t2)
         input('HGDYSG')
     
 
@@ -239,7 +239,7 @@ def datDuongGiuaGame(p_idx, list_DuongCoTheDat):
     env.stepEnv(env_state, diem_t2)
     layer_3.empty()
 
-    print(diem_t1, diem_t2)
+    ###print(diem_t1, diem_t2)
 
     for road_idx in range(72):
         if diem_t1 in CONST.ROAD_POINT[road_idx] and diem_t2 in CONST.ROAD_POINT[road_idx]:
@@ -265,7 +265,7 @@ def datThanhPho(p_idx, list_diemCoTheDat):
 
     env.stepEnv(env_state, diemDatNha)
 
-    # print('Điểm đặt nhà:', diemDatNha)
+    # ###print('Điểm đặt nhà:', diemDatNha)
     BOARD.Settlements_and_Cities_state[diemDatNha] = -p_idx-1
     BOARD.Player[p_idx].Remaining_Cities -= 1
     BOARD.Player[p_idx].Remaining_Settlements += 1
@@ -417,8 +417,7 @@ def check_largest_Army(p_idx):
         BOARD.Current_Largest_Army = BOARD.Player[p_idx].Used_Knight_Cards
     else:
         if BOARD.Player[p_idx].Used_Knight_Cards > BOARD.Current_Largest_Army:  # Lớn hơn
-            print(BOARD.Player[p_idx].Used_Knight_Cards,
-                  BOARD.Current_Largest_Army, 'muahahahahahahahahaha')
+            ###print(BOARD.Player[p_idx].Used_Knight_Cards,BOARD.Current_Largest_Army, 'muahahahahahahahahaha')
 
             old_p_idx = BOARD.Current_Largest_Army_idx
             if old_p_idx != 9999:
@@ -775,7 +774,7 @@ class Animation:
                     temp = Dynamic_Sprite(Image.Res_card[res_idx], (pos[0]+32*(
                         i-(num_rei-1)/2.0), pos[1]+18*(i-(num_rei-1)/2.0)), 'center')
                     layer_3.add(temp)
-                    print(p_idx, res_idx)
+                    ###print(p_idx, res_idx)
                     des = SPRITE.Player[p_idx].Res_Cards[res_idx].rect.center
                     temp.move(des, 'center', _(120))
 
@@ -852,7 +851,7 @@ for i in range(16):
 
     compare_numba_graphic(BOARD, env_state)
 
-    print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
+    ###print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
 
     # Đổi màu tên người chơi chính
     if i > 0:
@@ -937,10 +936,9 @@ for i in range(10000):
     p_idx = i % 4
     BOARD.main_id = p_idx
 
-    print('######################################################## Đến người người chơi id',
-          BOARD.main_id, env_state[230] % 4)
+    ###print('######################################################## Đến người người chơi id',BOARD.main_id, env_state[230] % 4)
     
-    print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
+    ###print('$$$ ### *** """ Đến turn của:', list_player_name[p_idx], '""" *** ### $$$')
     change_player_name_color((p_idx-1) % 4, RGB_color.SPRING_GREEN)
     change_player_name_color(p_idx, RGB_color.WHITE)
     set_notification(list_player_name[p_idx]+"'s turn")
@@ -985,7 +983,7 @@ for i in range(10000):
 
             env.stepEnv(env_state, action_idx)
         
-        print(action)
+        ###print(action)
 
         if action == 'roll_dice':
             total_dice = int(env_state[228])
@@ -1160,7 +1158,7 @@ for i in range(10000):
 
             env.stepEnv(env_state, res_pick_idx_numba)
 
-            # print(res_pick_idx)
+            # ###print(res_pick_idx)
             for k in range(BOARD.Player[p_idx].Card_exchange_rate[res_pick_idx]):
                 BOARD.Player[p_idx].Res_Cards[res_pick_idx] -= 1
                 SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
@@ -1183,7 +1181,7 @@ for i in range(10000):
 
             env.stepEnv(env_state, res_pick_idx_numba)
 
-            # print(res_pick_idx)
+            # ###print(res_pick_idx)
             BOARD.Bank.Res_Cards[res_pick_idx] -= 1
             SPRITE.Bank.Number_Res_Cards[res_pick_idx].set_value(
                 BOARD.Bank.Res_Cards[res_pick_idx])
@@ -1229,7 +1227,7 @@ for i in range(10000):
 
                         env.stepEnv(env_state, res_pick_idx_numba)
 
-                        # print(res_pick_idx)
+                        # ###print(res_pick_idx)
 
                         BOARD.Bank.Res_Cards[res_pick_idx] -= 1
                         SPRITE.Bank.Number_Res_Cards[res_pick_idx].set_value(
@@ -1260,12 +1258,12 @@ for i in range(10000):
                 #             SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
                 #                 BOARD.Player[p_idx].Res_Cards[res_pick_idx])
 
-                print('Nguyên liệu lấy khi dùng thẻ nomopoly', res_pick_idx, 'Nguyên liệu bank còn', BOARD.Bank.Res_Cards[res_pick_idx])
+                ###print('Nguyên liệu lấy khi dùng thẻ nomopoly', res_pick_idx, 'Nguyên liệu bank còn', BOARD.Bank.Res_Cards[res_pick_idx])
                 if BOARD.Bank.Res_Cards[res_pick_idx] > 0:
                     so_res_lay = 19 - BOARD.Bank.Res_Cards[res_pick_idx]
                     if so_res_lay > BOARD.Bank.Res_Cards[res_pick_idx]:
                         so_res_lay = BOARD.Bank.Res_Cards[res_pick_idx]
-                    print('Số nguyên liệu lấy', so_res_lay, BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+                    ###print('Số nguyên liệu lấy', so_res_lay, BOARD.Player[p_idx].Res_Cards[res_pick_idx])
                     for k in range(so_res_lay):
                         BOARD.Bank.Res_Cards[res_pick_idx] -= 1
                         SPRITE.Bank.Number_Res_Cards[res_pick_idx].set_value(
@@ -1274,7 +1272,7 @@ for i in range(10000):
                         BOARD.Player[p_idx].Res_Cards[res_pick_idx] += 1
                         SPRITE.Player[p_idx].Number_Res_Cards[res_pick_idx].set_value(
                             BOARD.Player[p_idx].Res_Cards[res_pick_idx])
-                    print('Số nguyên liệu sau khi lấy', BOARD.Player[p_idx].Res_Cards[res_pick_idx])
+                    ###print('Số nguyên liệu sau khi lấy', BOARD.Player[p_idx].Res_Cards[res_pick_idx])
                 # raise 'Done'
         elif action == 'take_res_from_storage':
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''

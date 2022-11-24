@@ -73,7 +73,7 @@ def initEnv() -> np.ndarray:
     env[226:229] = -1
 
     # [229]: Pha
-    env[229] = 5
+    env[229] = 0
     # [230]: Turn
 
     # [231]: Điểm đặt thứ nhất
@@ -87,12 +87,15 @@ def initEnv() -> np.ndarray:
     # [234]: Số lần sử dụng thẻ dev
     # [235:239]: Loại thẻ dev được sử dụng trong turn hiện tại
     # [239:244]: Lượng nguyên liệu còn lại khi bị chia đầu game
+    resource_turn_0 = np.random.randint(0, 5)
     env[239:244] = 4
+    env[239 + resource_turn_0] = 3
     # [244]: Người chơi đang action (không hẳn là người chơi chính)
     # [245:249], số nguyên liệu đã lấy trong turn đầu game
     # [249:254]: Tài nguyên đưa ra trong trade offer
     # [254:259]: Tài nguyên yêu cầu trong trade offer
     # [254:274]: Tài nguyên trong kho dự trữ của các người chơi
+    env[254 + resource_turn_0] = 1
     return env
 
 
@@ -538,21 +541,20 @@ def stepEnv(env: np.ndarray, action: int):
 
         # 16 turn đầu: Kết thúc turn, chuyển người chơi, nếu là turn 8 thì chỉ chuyển pha
         if env[230] <= 15:
-            env[230] += 1
+            env[230] += 2
             if env[230] == 16:  # Chỉ chuyển pha
                 env[239] = 1  # Cài lại số lần tạo trade offer
                 env[229] = 2  # Sang pha 2: Đổ xx hoặc dùng thẻ dev
                 roll_xx(env)  # Chưa thể có thẻ dev trong trường hợp này
             else:  # Thay đổi người chơi, chuyển pha
-                env[229] = 5  # Chuyển sang pha lấy nguyên liệu đầu game
+
+                ### Cộng nguyên liệu cho người chơi tiếp theo
+                env[229] = 0
                 if env[230] < 8:
                     env[244] = env[230] // 2
                 else:
-                    if env[230] % 2 == 1:
-                        env[244] = (15 - env[230])//2
-                    else:
-                        env[244] = (3 - (env[230] - 8) // 2)
-                        print('Chuyển người chơi',  (3 - (env[230] - 8) // 2))
+                    env[244] = 7 - env[230]//2
+
 
 
         else:  # Các turn giữa game
@@ -669,7 +671,7 @@ def stepEnv(env: np.ndarray, action: int):
                 env[229] = 0 #Lấy nguyên liệu xong chuyển sang phase 0
                 env[230] += 1
                 env[244] = (3 - (turn - 8)//2)
-                print('Chuyển người chơi thành, ', (3 - (turn - 8)//2), env[244])
+                # print('Chuyển người chơi thành, ', (3 - (turn - 8)//2), env[244])
 
         return
 
@@ -1252,7 +1254,7 @@ def one_game(list_player, per_file):
 
     winner = -1
     while env[230] < 100:
-        print('-------------------------------------')
+        # print('-------------------------------------')
         p_idx = int(env[244])
         p_state = getAgentState(env)
         actions = getValidActions(p_state)
@@ -1263,15 +1265,15 @@ def one_game(list_player, per_file):
         action, temp_file[p_idx], per_file = list_player[p_idx](
             p_state, temp_file[p_idx], per_file)
         
-        print(action, np.where(actions == 1)[0])
-        print('phase', env[229], 'turn', env[230], 'id', env[244], 'xx', env[228], env[48:53], all_source,  env[53:58], env[249:254], env[245:250])
+        # print(action, np.where(actions == 1)[0])
+        # print('phase', env[229], 'turn', env[230], 'id', env[244], 'xx', env[228], env[48:53], all_source,  env[53:58], env[249:254], env[245:250])
         stepEnv(env, action)
-        print('Nguyên liệu của người chơi', env[58:58+5],env[100:100+5], env[142:142+5], env[184:184+5])
-        print('Nguyên liệu trong kho:', env[254: 259], env[259: 264], env[264: 269], env[269: 274])
-        print('Thông tin của các người chơi:', end = '')
-        print(env[58+42*p_idx+5: 58 + 42*p_idx+11], end = '|')
-        print('Tỉ lệ trao đổi với bank', env[s_+37:s_+42], 'action trước đó', action)
-        print('Nguyên liệu của bank ở góc nhìn người chơi', p_state[48:53])
+        # print('Nguyên liệu của người chơi', env[58:58+5],env[100:100+5], env[142:142+5], env[184:184+5])
+        # print('Nguyên liệu trong kho:', env[254: 259], env[259: 264], env[264: 269], env[269: 274])
+        # print('Thông tin của các người chơi:', end = '')
+        # print(env[58+42*p_idx+5: 58 + 42*p_idx+11], end = '|')
+        # print('Tỉ lệ trao đổi với bank', env[s_+37:s_+42], 'action trước đó', action)
+        # print('Nguyên liệu của bank ở góc nhìn người chơi', p_state[48:53])
         # print('index đã có', 59+np.argmax(p_state[196:201]),'sau khi đổi',  p_state[218])
 
         if (all_source <19).any() and env[230] > 17:
@@ -1330,7 +1332,7 @@ def random_player(p_state, temp_file, per_file):
     arr_action = getValidActions(p_state)
     arr_action = np.where(arr_action == 1)[0]
     action = np.random.choice(arr_action)
-    print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
+    # print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
     return action, temp_file, per_file
 
 normal_main([random_player]*getAgentSize(), 1, [0])
