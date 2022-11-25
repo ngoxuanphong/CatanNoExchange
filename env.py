@@ -1,5 +1,5 @@
 from relation import *
-
+import random
 #@njit()
 def initEnv() -> np.ndarray:
     env = np.zeros(279)
@@ -92,6 +92,7 @@ def initEnv() -> np.ndarray:
     env[239 + resource_turn_0] = 3
     # [244]: Người chơi đang action (không hẳn là người chơi chính)
     # [245:249], số nguyên liệu đã lấy trong turn đầu game
+    env[245] = 1 #Người chơi đầu tiên đã nhận 1 nguyên liệu
     # [249:254]: Tài nguyên đưa ra trong trade offer
     # [254:259]: Tài nguyên yêu cầu trong trade offer
     # [254:274]: Tài nguyên trong kho dự trữ của các người chơi
@@ -542,19 +543,37 @@ def stepEnv(env: np.ndarray, action: int):
         # 16 turn đầu: Kết thúc turn, chuyển người chơi, nếu là turn 8 thì chỉ chuyển pha
         if env[230] <= 15:
             env[230] += 2
+            turn = env[230]
             if env[230] == 16:  # Chỉ chuyển pha
                 env[239] = 1  # Cài lại số lần tạo trade offer
                 env[229] = 2  # Sang pha 2: Đổ xx hoặc dùng thẻ dev
                 roll_xx(env)  # Chưa thể có thẻ dev trong trường hợp này
             else:  # Thay đổi người chơi, chuyển pha
-
-                ### Cộng nguyên liệu cho người chơi tiếp theo
                 env[229] = 0
                 if env[230] < 8:
                     env[244] = env[230] // 2
+                    total_resource_take = int(turn//2 + 1)
+                    for i_res in range(total_resource_take):
+                        res = random.choices([0,1,2,3,4], weights = env[239:244])[0]
+                        env[239+res] -= 1
+                        if p_idx != 3:
+                            o_idx = p_idx+1
+                        else: o_idx = 3
+                        env[254+5*o_idx+res] += 1
+                        env[245+o_idx] += 1
                 else:
                     env[244] = 7 - env[230]//2
-
+                    if turn == 8 :
+                        o_idx = int(p_idx)
+                        total_resource_take = int(5 - env[245 + o_idx])
+                    else:
+                        o_idx = int(p_idx - 1)
+                        total_resource_take = int(5 - env[245 + o_idx])
+                    for i_res in range(total_resource_take):
+                        res = random.choices([0,1,2,3,4], weights = env[239:244])[0]
+                        env[239+res] -= 1
+                        env[254+5*o_idx+res] += 1
+                        env[245+o_idx] += 1
 
 
         else:  # Các turn giữa game
@@ -1253,7 +1272,7 @@ def one_game(list_player, per_file):
     temp_file = [[0], [0], [0], [0]]
 
     winner = -1
-    while env[230] < 100:
+    while env[230] < 1000:
         # print('-------------------------------------')
         p_idx = int(env[244])
         p_state = getAgentState(env)
@@ -1266,7 +1285,7 @@ def one_game(list_player, per_file):
             p_state, temp_file[p_idx], per_file)
         
         # print(action, np.where(actions == 1)[0])
-        # print('phase', env[229], 'turn', env[230], 'id', env[244], 'xx', env[228], env[48:53], all_source,  env[53:58], env[249:254], env[245:250])
+        # print('phase', env[229], 'turn', env[230], 'id', env[244], 'xx', env[228], env[48:53], all_source,  env[245:249])
         stepEnv(env, action)
         # print('Nguyên liệu của người chơi', env[58:58+5],env[100:100+5], env[142:142+5], env[184:184+5])
         # print('Nguyên liệu trong kho:', env[254: 259], env[259: 264], env[264: 269], env[269: 274])
@@ -1335,4 +1354,5 @@ def random_player(p_state, temp_file, per_file):
     # print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
     return action, temp_file, per_file
 
-normal_main([random_player]*getAgentSize(), 1, [0])
+a, b = normal_main([random_player]*getAgentSize(), 1000, [0])
+print(a)
