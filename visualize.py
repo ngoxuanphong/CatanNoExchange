@@ -5,6 +5,16 @@ import numpy
 from Catan import *
 import env
 
+def Trang(state, temp_file, per_file):
+    arr_action = env.getValidActions(state)
+    arr_action = np.where(arr_action == 1)[0]
+    print(arr_action)
+    action = -1
+    while action not in arr_action:
+        action = int(input("Chị Trang ơi nhập action:"))
+    
+    return action, temp_file, per_file 
+
 def random_player(p_state, temp_file, per_file):
     arr_action = env.getValidActions(p_state)
     arr_action = np.where(arr_action == 1)[0]
@@ -18,9 +28,9 @@ from env import ROAD_PRICE, CITY_PRICE, SETTLEMENT_PRICE, DEV_PRICE as DEV_CARD_
 list_player_name = ['Mysticblue', 'Gold', 'Silver', 'Bronze']
 list_player_type = ['B', 'B', 'B', 'B']
 list_player_color = ['mysticblue', 'gold', 'silver', 'bronze']
-list_player = [random_player, random_player, random_player, random_player]
+list_player = [random_player, Trang, random_player, random_player]
 
-SPEED = 10000
+SPEED = 5
 
 # Đừng chỉnh gì ở dưới đây
 
@@ -170,7 +180,7 @@ def datNha(p_idx, list_diemCoTheDat):
 
     
     ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    diemDatNha, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
 
     env.stepEnv(env_state, diemDatNha)
 
@@ -204,7 +214,7 @@ def datDuong(p_idx, list_DuongCoTheDat):
     
     duongDuocChon = 9999999
     diem_t1 = int(env_state[231])
-    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    diem_t2, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
     layer_3.empty()
 
     env.stepEnv(env_state, diem_t2)
@@ -233,9 +243,9 @@ def datDuongGiuaGame(p_idx, list_DuongCoTheDat):
     
     hold_display(_(60), False)
     ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    diem_t1, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    diem_t1, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
     env.stepEnv(env_state, diem_t1)
-    diem_t2, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    diem_t2, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
     env.stepEnv(env_state, diem_t2)
     layer_3.empty()
 
@@ -261,7 +271,7 @@ def datThanhPho(p_idx, list_diemCoTheDat):
         layer_3.add(SPRITE.Point_highlight_circle[diem])
 
     ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    diemDatNha, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    diemDatNha, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
 
     env.stepEnv(env_state, diemDatNha)
 
@@ -285,7 +295,7 @@ def diChuyenRobber(p_idx):
     hold_display(_(60), False)
 
     ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-    new_Robber_pos_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+    new_Robber_pos_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
     new_Robber_pos = new_Robber_pos_numba - 64 # Dịch sang [0:18]
 
     layer_3.empty()
@@ -841,6 +851,9 @@ ANIMATION = Animation()
 
 ###########################################################################
 
+nguyenLieuKho = env_state[239:244]
+nguyenLieuKho1 = np.full(5,4)
+
 # Đầu game
 temp =     [0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 2, 2, 1, 1, 0, 0]
 temp_num = [1, 0, 2, 0, 3, 0, 4, 0, 1, 0, 2, 0, 3, 0, 4, 0]
@@ -863,29 +876,53 @@ for i in range(16):
     hold_display(_(60), False)
 
     if temp_num[i] != 0:
-        for j in range(temp_num[i]):
-            ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            NlChon_Numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+        # print(nguyenLieuKho, "nguyên liệu còn lại trong kho")
+        # print(nguyenLieuKho1-nguyenLieuKho, 'abcxyz')
 
-            env.stepEnv(env_state, NlChon_Numba)
-            NlChon = NlChon_Numba - 59
+        nl_duoc_phat = (nguyenLieuKho1 - nguyenLieuKho).astype(int)
+        for i in range(5):
+            for j in range(nl_duoc_phat[i]):
+                NlChon = i
 
-            # Animation
-            BOARD.Bank.ResBank[NlChon] -= 1
-            SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
+                BOARD.Bank.ResBank[NlChon] -= 1
+                SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
 
-            tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
+                tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
 
-            des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
-            tempDy.move(des, 'center', _(60))
-            layer_3.add(tempDy)
-            hold_display(_(60), True)
+                des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
+                tempDy.move(des, 'center', _(60))
+                layer_3.add(tempDy)
+                hold_display(_(60), True)
 
-            BOARD.Player[p_idx].ResBank[NlChon] += 1
-            SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
+                BOARD.Player[p_idx].ResBank[NlChon] += 1
+                SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
+                layer_3.empty()
 
-            layer_3.empty()
+        # print(env_state[239:244], "nguyên liệu còn lại trong kho")
+        # for j in range(temp_num[i]):
+        #     ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
+        #     NlChon_Numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+
+        #     env.stepEnv(env_state, NlChon_Numba)
+        #     NlChon = NlChon_Numba - 59
+
+        #     # Animation
+        #     BOARD.Bank.ResBank[NlChon] -= 1
+        #     SPRITE.Bank.Number_ResBank[NlChon].set_value(BOARD.Bank.ResBank[NlChon])
+
+        #     tempDy = SPRITE.Bank.Res_Cards[NlChon].copy()
+
+        #     des = SPRITE.Player[p_idx].ResBank[NlChon].rect.center
+        #     tempDy.move(des, 'center', _(60))
+        #     layer_3.add(tempDy)
+        #     hold_display(_(60), True)
+
+        #     BOARD.Player[p_idx].ResBank[NlChon] += 1
+        #     SPRITE.Player[p_idx].Number_ResBank[NlChon].set_value(BOARD.Player[p_idx].ResBank[NlChon])
+
+        #     layer_3.empty()
     else:
+        nguyenLieuKho1 = nguyenLieuKho.copy()
         set_notification(list_player_name[p_idx]+"is placing settlement")
 
         list_diemCoTheDat = []
@@ -963,7 +1000,7 @@ for i in range(10000):
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
             temp_dev_1 = get_bank_dev(env_state)
 
-            action_idx, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            action_idx, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
             dict_idx_str = {
                 54: 'roll_dice',
                 55: 'knight',
@@ -1018,7 +1055,7 @@ for i in range(10000):
                         
                         for k in range(list_num_return[j]):
                             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                            res_idx_return_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+                            res_idx_return_numba, tf, pf = list_player[sub_p_idx](env.getAgentState(env_state), [0], [0])
                             res_idx_return = res_idx_return_numba - 89 # Dịch sang 0, 1, 2, 3, 4
 
                             env.stepEnv(env_state, res_idx_return_numba)
@@ -1153,7 +1190,7 @@ for i in range(10000):
                     list_tnCoTheChon.remove(res_idx)
 
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            res_pick_idx_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
             res_pick_idx = res_pick_idx_numba - 89 # Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)
@@ -1176,7 +1213,7 @@ for i in range(10000):
                 5) if BOARD.Bank.Res_Cards[res_idx] > 0 and res_idx != res_pick_idx]
 
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            res_pick_idx_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
             res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)
@@ -1222,7 +1259,7 @@ for i in range(10000):
                         5) if BOARD.Bank.Res_Cards[res_idx] > 0]
                     if len(list_tnCoTheChon) > 0:
                         ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                        res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+                        res_pick_idx_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
                         res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
                         env.stepEnv(env_state, res_pick_idx_numba)
@@ -1239,7 +1276,7 @@ for i in range(10000):
             
             elif action == 'monopoly':
                 ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-                res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+                res_pick_idx_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
                 res_pick_idx = res_pick_idx_numba - 59 #Dịch sang 0,1,2,3,4
 
 
@@ -1276,7 +1313,7 @@ for i in range(10000):
                 # raise 'Done'
         elif action == 'take_res_from_storage':
             ''' $$$ ### *** """ Nhận action """ *** ### $$$ '''
-            res_pick_idx_numba, tf, pf = random_player(env.getAgentState(env_state), [0], [0])
+            res_pick_idx_numba, tf, pf = list_player[p_idx](env.getAgentState(env_state), [0], [0])
             res_pick_idx = res_pick_idx_numba  - 59 #Dịch sang 0,1,2,3,4
 
             env.stepEnv(env_state, res_pick_idx_numba)

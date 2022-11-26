@@ -1354,5 +1354,5 @@ def random_player(p_state, temp_file, per_file):
     # print('Arr', arr_action, 'action', action, np.where(p_state[205:218]==1)[0])
     return action, temp_file, per_file
 
-a, b = normal_main([random_player]*getAgentSize(), 1000, [0])
-print(a)
+# a, b = normal_main([random_player]*getAgentSize(), 1000, [0])
+# print(a)
